@@ -81,14 +81,15 @@ src/
 │   ├── page.tsx              /            (listagem: título e dois <Suspense>)
 │   ├── error.tsx             erro do segmento, com "Tentar novamente"
 │   ├── favoritos/page.tsx    /favoritos   (estática; a lista vem do navegador)
-│   └── movie/[id]/           /movie/[id]  (previsto)
+│   └── movie/[id]/           /movie/[id]  (detalhe: page, not-found e error do segmento)
 ├── components/
 │   ├── layout/               Header, NavLink
 │   ├── ui/                   Button, ButtonLink, EmptyState, ErrorState
 │   ├── movies/               FilterBar, FilterBarLoader, MovieResults, MovieGrid, MovieCard,
 │   │                         MovieGridSkeleton, Pagination, ListingTransition
 │   ├── favorites/            FavoriteButton, FavoritesBadge, FavoritesList (ilhas client)
-│   └── movie-detail/         previsto
+│   └── movie-detail/         BackLink, BackLinkLoader, MovieDetails, MovieHeader, RatingChip,
+│                             Overview, CastList, CastCard, TrailerEmbed, DetailSkeleton
 └── lib/
     ├── tmdb/                 única porta para a API do TMDB
     │   ├── client.ts         server-only: getGenres, fetchListing, getMovieDetail
@@ -99,13 +100,16 @@ src/
     │   ├── pickOverview.ts   sinopse com fallback de idioma
     │   ├── pickTrailer.ts    escolha do trailer
     │   ├── images.ts         URLs de pôster e de foto do elenco
+    │   ├── parseMovieId.ts   id da rota de detalhe (só inteiro positivo)
     │   └── fixtures/         respostas de exemplo usadas nos testes
     ├── listing/
-    │   └── params.ts         URL da listagem ↔ estado (q, genre, sort, page)
+    │   ├── params.ts         URL da listagem ↔ estado (q, genre, sort, page)
+    │   └── backHref.ts       href de "Voltar à listagem" a partir do ?from= do detalhe
     ├── favorites/
     │   ├── store.ts          formato, validação e store sobre o localStorage
     │   └── useFavorites.ts   hook com useSyncExternalStore
-    └── format/               nota ("7,2") e ano de lançamento
+    └── format/               nota ("7,2"), ano, duração ("2h 16min"), nome do idioma e a linha
+                              "Ano · Duração · Gêneros"
 e2e/                          testes de ponta a ponta e de layout (Playwright)
 ├── support/                  gates de layout, tokens e pré-requisito do TMDB
 └── *.spec.ts                 um arquivo por fluxo
@@ -214,6 +218,28 @@ Decisões aplicadas até aqui, cada uma com a alternativa considerada e o que se
 
 **Estado vazio do protótipo.** Sem favoritos, a página usa o mesmo `EmptyState` dos outros estados excepcionais, com o coração, os textos do protótipo e a ação "Explorar filmes".
 
+### Detalhe do filme
+
+**A página não lê a URL nem busca dados.** `page.tsx` de `/movie/[id]` recebe `params` e `searchParams` e os repassa, sem `await`, a dois `<Suspense>` irmãos: um resolve o link "Voltar à listagem" e o outro busca o filme. O que fica fora deles (o link apontando para `/` e o skeleton) é um shell que não depende da requisição. Não há `generateStaticParams`: nenhum filme é pré-renderizado, e o build passa sem token e sem rede. No resumo do build a rota aparece como `ƒ` (dinâmica) e, com `CATALOGO_CACHE_COMPONENTS=1`, como `◐` (shell estático com conteúdo transmitido). As alternativas eram um `loading.tsx`, que esconderia o link de volta, e pré-renderizar os filmes populares, que exigiria token no build.
+
+**Id validado antes de qualquer chamada.** `parseMovieId` aceita só inteiro positivo em forma canônica. `/movie/abc`, `/movie/0` e `/movie/0603` vão para o not-found sem chegar ao TMDB; `0603` é recusado de propósito, para cada filme ter um endereço só. Filme que a API não tem (404) também vai para o not-found. Os demais erros (token ausente, 401, 429, 5xx, rede) sobem para o `error.tsx` do segmento, com "Tentar novamente".
+
+**O not-found responde HTTP 200, não 404.** O `notFound()` é chamado dentro do `<Suspense>`, depois de a resposta começar a ser transmitida, e o status já saiu. O Next mantém o 200, mostra a tela "Filme não encontrado" e injeta `<meta name="robots" content="noindex">`. Foi medido com `curl` em `/movie/abc`, `/movie/0603` e `/movie/999999999`, em `next dev` e `next start`, com e sem a flag: 200 com `noindex` nos quatro. Garantir 404 exigiria ler `params` no corpo da página, fora do Suspense, o que tornaria a rota inteira dinâmica e quebraria o shell estático. Para um catálogo sem indexação em jogo, a tela correta com `noindex` foi considerada suficiente.
+
+**Título da aba pela mesma chamada.** `generateMetadata` chama o mesmo `getMovieDetail` da página; o Next reaproveita a requisição dentro do render. O título é o do filme, "Filme não encontrado" para id inválido ou inexistente e "Filme" se a busca falhar: a metadata nunca é a origem do erro, quem o mostra é a página. Com a flag ligada essa metadata é transmitida depois do shell.
+
+**Sinopse em três casos.** Em português, só o texto. Em outro idioma, o aviso "Sinopse disponível apenas em inglês." (ou no idioma de origem) vem antes do texto, e o parágrafo leva o atributo `lang`, para um leitor de tela trocar a pronúncia. Sem sinopse em nenhum idioma, a seção continua e diz "Sinopse não disponível.". O nome do idioma vem de `Intl.DisplayNames` em pt-BR, sem tabela própria; para um código que ele não conhece, o aviso diz "outro idioma". A escolha da sinopse já chega feita pela camada de dados; o componente só apresenta.
+
+**Elenco e trailer somem quando não há dados.** O elenco mostra até 8 pessoas em `figure` com `figcaption`, duas colunas no celular. O trailer é um `<iframe>` de `youtube-nocookie.com` (o player não grava cookie antes do play) com `title`, `loading="lazy"` e tela cheia. Sem elenco ou sem trailer, a seção inteira some, inclusive o título dela. A página não carrega nenhum script do YouTube, só o iframe, que ainda assim pesa cerca de 500 KB quando entra na tela.
+
+**"Voltar à listagem" com `?from=` validado.** O card da listagem leva o estado dela em `?from=`. No detalhe, esse valor passa pelo mesmo parser da listagem e o href é montado pelo app: sempre `/` ou `/?…`, nunca o texto que veio na URL. `from=page%3D999` vira `/?page=500`; uma URL externa ou um valor inválido vira `/`. A alternativa era `router.back()`, que não funciona em link direto e exigiria uma ilha client. Vindo de `/favoritos` não há `from`, e o link volta para `/`.
+
+**Pôster pré-carregado.** O pôster usa `w500` com `preload`, por ser a maior imagem da página, e `alt=""`, porque o título ao lado já diz de que filme é. A prop `priority` foi evitada: está deprecada no Next 16 em favor de `preload`. Sem pôster ou sem foto do ator, aparece um placeholder com rótulo decorativo.
+
+**Nenhuma ilha client nova.** Tudo na página é renderizado no servidor, exceto o botão de favorito, que já existia. Ele recebe o filme inteiro como prop, cerca de 2 KB a mais no payload, e grava só os campos do resumo.
+
+**O link ativo do header lê o pathname sob `<Suspense>`.** Numa rota com parâmetro dinâmico o pathname só existe na requisição, e com `cacheComponents` ligado o build falhava nesta rota por causa do `usePathname()` do header. O `NavLink` passou a lê-lo num componente interno sob `<Suspense>`, com o link sem marca de ativo como fallback, que no detalhe é também o estado final.
+
 ## Melhorias futuras
 
 - Type guard mínimo nas respostas do TMDB, para que uma mudança de formato vire `TmdbError` em vez de campo vazio na tela.
@@ -224,5 +250,9 @@ Decisões aplicadas até aqui, cada uma com a alternativa considerada e o que se
 - Mover o foco para o card seguinte ao remover um favorito em `/favoritos`; hoje ele vai para o corpo da página.
 - Avisar quando os favoritos não estão sendo salvos porque o armazenamento do navegador está bloqueado.
 - Um seletor por filme (`useIsFavorite(id)`), para um clique re-renderizar só o botão que mudou, se a lista crescer.
+- Embed leve do trailer: mostrar a miniatura e carregar o player do YouTube só no clique.
+- Status 404 real no not-found do detalhe, validando o id antes de a resposta começar (por exemplo, no `proxy`).
+- Teste de ponta a ponta do estado de erro do detalhe, que hoje é conferido manualmente com o token vazio.
+- Passar ao botão de favorito do detalhe só os campos do resumo, em vez do filme inteiro.
 
 Demais itens a definir ao final da implementação.
