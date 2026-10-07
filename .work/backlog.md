@@ -7,7 +7,7 @@
 
 | id | title | kind | source | change | state |
 |----|-------|------|--------|--------|-------|
-| L1 | Setup do projeto: scaffold Next.js (App Router) + TypeScript, cliente TMDB com token via variável de ambiente, .env.example | setup | DESAFIO.md › Setup | setup-catalogo, tmdb-client | doing |
+| L1 | Setup do projeto: scaffold Next.js (App Router) + TypeScript, cliente TMDB com token via variável de ambiente, .env.example | setup | DESAFIO.md › Setup | setup-catalogo, tmdb-client | done |
 | L2 | Listagem de filmes populares com paginação | requisito | DESAFIO.md › Requisitos Obrigatórios | listagem-filmes | todo |
 | L3 | Busca por título | requisito | DESAFIO.md › Requisitos Obrigatórios | listagem-filmes | todo |
 | L4 | Filtro por gênero | requisito | DESAFIO.md › Requisitos Obrigatórios | listagem-filmes | todo |

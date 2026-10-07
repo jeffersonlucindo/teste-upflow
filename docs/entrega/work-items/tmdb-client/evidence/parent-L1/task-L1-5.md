@@ -17,8 +17,8 @@ A sonda `scripts/tmdb-probe.mjs` fez chamadas reais ao TMDB (ids 603, 20000 e 50
 | Arquivo | Ação | Descrição |
 |---------|------|-----------|
 | `scripts/tmdb-probe.mjs` | criado | Sonda ESM sem dependências: lê `TMDB_API_READ_TOKEN` e `TMDB_LANGUAGE`, aceita um id, faz as três chamadas e imprime um resumo sem o token; sai com 1 nomeando a variável se ela faltar |
-| `.work/changes/tmdb-client/probe-output.txt` | criado | Saída real das execuções para 603, 20000 e 500000 e da checagem complementar de `include_video_language` |
-| `.work/changes/tmdb-client/design.md` | alterado | Decisão 13 com a tabela "Resultado das verificações" preenchida; decisão 7 com o valor adotado |
+| `.work/changes/archive/2026-10-07-tmdb-client/probe-output.txt` | criado | Saída real das execuções para 603, 20000 e 500000 e da checagem complementar de `include_video_language` |
+| `.work/changes/archive/2026-10-07-tmdb-client/design.md` | alterado | Decisão 13 com a tabela "Resultado das verificações" preenchida; decisão 7 com o valor adotado |
 | `.work/design/decisoes.md` | alterado | D17, D18 e D19 sem "pendente de verificação" e tabela de pendências com o resultado |
 | `src/lib/tmdb/client.ts` | alterado | `VIDEO_LANGUAGES` passou de `pt,en,null` para `pt-BR,pt,en,null` |
 
@@ -52,4 +52,4 @@ Todas as chamadas devolveram HTTP 200, exceto a página 501 (HTTP 400).
 
 E2E e layout: `not-applicable` (o change não toca `src/app/**` nem `src/components/**`; não há tela, então não há screenshots a copiar).
 
-QA (`.work/changes/tmdb-client/.devflow.yaml > qa`): 2 iterações, 8 findings resolvidos, `functional: pass` (`npm run check` com 95 testes em 8 arquivos e `npm run build` verdes), status `advisory-only`, com dois advisory baixos em aberto, ambos de `README.md`: a linha `@source not "../../.work"` já existe em develop e está fora do diff deste change; o diff da árvore mistura trechos de Playwright/E2E do ferramental, que ficam fora dos commits deste change.
+QA (`.work/changes/archive/2026-10-07-tmdb-client/.devflow.yaml > qa`): 2 iterações, 8 findings resolvidos, `functional: pass` (`npm run check` com 95 testes em 8 arquivos e `npm run build` verdes), status `advisory-only`, com dois advisory baixos em aberto, ambos de `README.md`: a linha `@source not "../../.work"` já existe em develop e está fora do diff deste change; o diff da árvore mistura trechos de Playwright/E2E do ferramental, que ficam fora dos commits deste change.

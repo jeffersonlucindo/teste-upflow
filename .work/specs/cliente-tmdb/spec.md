@@ -58,7 +58,7 @@ Placement: `src/lib/tmdb/errors.ts` (`TmdbError`, `errorKindFromStatus`); uso em
 #### Cenário: Mapeamento de status HTTP
 - QUANDO a resposta tem status 401 ou 403
 - ENTÃO `kind` é `unauthorized`
-- E 404 → `not_found`, 429 → `rate_limited`, qualquer outro status não-2xx (inclusive 422 e 5xx) → `unavailable`
+- E 404 → `not_found`, 429 → `rate_limited`, qualquer outro status não-2xx (inclusive 400, 422 e 5xx) → `unavailable`
 
 #### Cenário: Falha de rede ou JSON inválido
 - QUANDO o `fetch` lança `TypeError` ou o corpo não é JSON
@@ -246,5 +246,5 @@ Placement: `scripts/tmdb-probe.mjs`; registro em `.work/changes/tmdb-client/desi
 
 #### Cenário: Página 501
 - QUANDO `/discover/movie?page=501` responde
-- ENTÃO o status (esperado 422) e o `status_message` são registrados em D17
+- ENTÃO o status e o `status_message` são registrados em D17 (observado em 2026-10-07: HTTP 400, "Invalid page: Pages start at 1 and max at 500"; o esperado era 422)
 - E nada muda no código: `clampPage` já limita a 500

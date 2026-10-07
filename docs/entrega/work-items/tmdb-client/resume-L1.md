@@ -54,13 +54,13 @@ Os três changes de tela consomem tipos de domínio (`MovieSummary`, `MovieDetai
   - Arquivos: `src/lib/tmdb/client.ts`
 - [x] **5.** Verificação com a API real
   - Task(s): #L1-5
-  - Arquivos: `scripts/tmdb-probe.mjs`, `.work/changes/tmdb-client/probe-output.txt`, `.work/changes/tmdb-client/design.md`, `.work/design/decisoes.md`
+  - Arquivos: `scripts/tmdb-probe.mjs`, `.work/changes/archive/2026-10-07-tmdb-client/probe-output.txt`, `.work/changes/archive/2026-10-07-tmdb-client/design.md`, `.work/design/decisoes.md`
 - [x] **6.** Documentação
   - Task(s): #L1-6
   - Arquivos: `README.md`
 - [x] **7.** Validação
   - Task(s): #L1-7
-  - Arquivos: `.work/changes/tmdb-client/change.html`
+  - Arquivos: `.work/changes/archive/2026-10-07-tmdb-client/change.html`
 
 ---
 
@@ -73,8 +73,10 @@ Os três changes de tela consomem tipos de domínio (`MovieSummary`, `MovieDetai
 
 ## 📦 Entrega
 
-**Status:** Implementado em 2026-10-07; QA `advisory-only` (2 iterações, 8 findings resolvidos, `functional: pass`, E2E e layout `not-applicable` por não haver tela). Evidências geradas, ainda sem validação do desenvolvedor.
-**Change:** `.work/changes/archive/2026-10-07-tmdb-client/` (após o finish)
+**Status:** Finalizado em 2026-10-07. QA `advisory-only` (2 iterações, 8 findings resolvidos, `functional: pass`, E2E e layout `not-applicable` por não haver tela).
+**Change:** `.work/changes/archive/2026-10-07-tmdb-client/`
+**PR:** [#1](https://github.com/jeffersonlucindo/desafio-up-flow/pull/1), mergeado em `develop` em 2026-10-07 (merge `a9cad17`)
+**Spec:** `.work/specs/cliente-tmdb/spec.md`
 
 **Evidências:**
 ### Parent #L1 — Setup do projeto: scaffold Next.js (App Router) + TypeScript, cliente TMDB com token via variável de ambiente, .env.example
