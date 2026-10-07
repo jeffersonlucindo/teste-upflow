@@ -33,6 +33,7 @@ Em `.env.local`, preencha `TMDB_API_READ_TOKEN` com o **API Read Access Token (v
 | `npm run test:watch` | Vitest em modo watch. |
 | `npm run tokens:check` | Confere `tokens.json` contra o `@theme` e proíbe cor literal em `src/`. |
 | `npm run check` | `tokens:check`, `lint`, `typecheck` e `test` em sequência. |
+| `npm run e2e` | Playwright: faz o build, sobe o servidor na porta 3100 e roda os testes de ponta a ponta e de layout em 1280 e 390 px. Na primeira vez, rode `npx playwright install chromium`. |
 
 ## Flags
 
@@ -71,6 +72,10 @@ src/
 │   ├── movie-detail/         previsto
 │   └── favorites/            previsto
 └── lib/                      previsto: tmdb/, listing/, favorites/, format/
+e2e/                          testes de ponta a ponta e de layout (Playwright)
+├── support/                  gates de layout, tokens e pré-requisito do TMDB
+└── *.spec.ts                 um arquivo por fluxo
+playwright.config.ts          build de produção, projetos desktop (1280 px) e mobile (390 px)
 scripts/check-tokens.mjs      guardrail do Design System
 ```
 
@@ -92,7 +97,9 @@ Decisões aplicadas até aqui, cada uma com a alternativa considerada e o que se
 
 **`src/` organizado por domínio.** `app/` para rotas, `components/<domínio>/` e `lib/<domínio>/`, com o teste ao lado do arquivo. Fica claro quem é dono de cada arquivo; o custo é um nível a mais de pasta.
 
-**Vitest 5 com Testing Library (jsdom).** `npm run test` é execução única, sem watch. Funções puras e componentes client ou shared têm teste unitário. Server Components assíncronos não são testáveis no Vitest, então são verificados no browser.
+**Vitest 5 com Testing Library (jsdom).** `npm run test` é execução única, sem watch. Funções puras e componentes client ou shared têm teste unitário. Server Components assíncronos não são testáveis no Vitest, então ficam para os testes de ponta a ponta.
+
+**Playwright para ponta a ponta e layout.** `npm run e2e` roda contra o build de produção, em 1280 e 390 px, e cobre o que o Vitest não alcança: Server Components assíncronos, navegação e o layout renderizado. Os testes chegam a cada tela como o usuário chega (pelo header, pelo card, pela busca) e usam dados reais do TMDB, com asserções sobre estrutura e comportamento, não sobre um título específico. Em cada tela, `e2e/support/layout.ts` confere que toda cor computada é um token de `tokens.json`, que não há rolagem horizontal, que os controles têm 44 px de altura, que as fontes são as declaradas e que o foco por teclado mostra o anel. É a versão em runtime do `tokens:check`, que só vê o código-fonte. O custo é uma devDependency, o download do Chromium e alguns segundos de build por execução; como as telas com dados precisam de token e de rede, o `e2e` fica fora do `check`, e sem token esses testes aparecem como pulados, não como aprovados. Comparação de screenshot por diff de pixel foi descartada: os dados do TMDB mudam a cada dia.
 
 **`scripts/check-tokens.mjs`.** Script próprio, sem dependências, que confere `tokens.json` contra o `@theme` e falha se houver cor literal em `src/`. É um guardrail barato e visível para o Design System; custa manter o script. A alternativa era stylelint ou nenhuma verificação.
 

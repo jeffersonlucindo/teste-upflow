@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
     // Deste repositório: documentação do devflow (tem .tsx em .work/design/reference/) e scripts Node.
     ".work/**",
     "scripts/**",
+    "e2e/.output/**",
   ]),
 ]);
 

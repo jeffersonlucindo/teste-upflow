@@ -35,6 +35,6 @@ está na coluna abaixo.
 | 3 | `listagem-filmes` | L2, L3, L4, L5 | 2 | os quatro requisitos verificáveis no browser; testes de `parseListingParams`/`buildListingHref`, debounce do FilterBar, limites da Pagination; 390 e 1280 px; `next dev` e `build` com a flag ligada sem insight de blocking-route | 2–3 |
 | 4 | `favoritos` | L7 | 3 | favoritar na listagem → aparece em `/favoritos` → remover some; reload mantém; duas abas sincronizam; payload corrompido não quebra; testes do store e do hook; build com a flag ligada | 3–4 |
 | 5 | `detalhe-filme` | L6 | 2, 4 | `/movie/603` completo; `/movie/abc` e id inexistente → not-found; sinopse nos três casos; trailer some sem vídeo; "Voltar" preserva filtros; 390 e 1280 px; build com a flag ligada | 4 |
-| 6 | `readme-entrega` | L8 | 1–5 | clone limpo + `npm ci` + `.env.local` + `npm run dev` funciona; README com execução, decisões (D1–D43 consolidadas), trade-offs, flags, melhorias futuras (só código: sem seção de processo nem menção ao fluxo); checklist de teclado, contraste, 390/1280; repositório compartilhado | 5 |
+| 6 | `readme-entrega` | L8 | 1–5 | clone limpo + `npm ci` + `.env.local` + `npm run dev` funciona; README com execução, decisões (D1–D44 consolidadas), trade-offs, flags, melhorias futuras (só código: sem seção de processo nem menção ao fluxo); checklist de teclado, contraste, 390/1280; repositório compartilhado | 5 |
 
 Ordem de corte se faltar prazo: D43 em `.work/design/decisoes.md`.

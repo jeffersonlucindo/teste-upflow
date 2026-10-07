@@ -45,3 +45,6 @@ next-env.d.ts
 
 # o exemplo de variáveis de ambiente é versionado (a regra .env* acima o ignoraria)
 !.env.example
+
+# playwright: relatório, traces e screenshots de layout
+/e2e/.output/
