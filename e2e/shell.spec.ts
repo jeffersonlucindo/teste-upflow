@@ -30,7 +30,9 @@ test.describe("shell", () => {
     await page.goto("/");
     const nav = page.getByRole("navigation", { name: "Principal" });
     await nav.getByRole("link", { name: /Favoritos/ }).click();
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    // O h1 da listagem também é um heading de nível 1: sem o nome, os gates rodariam ainda em "/".
+    await expect(page).toHaveURL("/favoritos");
+    await expect(page.getByRole("heading", { level: 1, name: "Meus favoritos" })).toBeVisible();
 
     await expectNoHorizontalOverflow(page);
     await expectTokenColors(page);
