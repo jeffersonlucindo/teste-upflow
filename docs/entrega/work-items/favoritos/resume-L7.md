@@ -64,8 +64,8 @@ Favoritar na listagem, ver em `/favoritos` e remover; reload mantém; duas abas 
 
 ## 📦 Entrega
 
-**Status:** Finalizado em 2026-10-07. QA `passed` (1 iteração, 5 findings resolvidos, nenhum em aberto, `functional: pass`, E2E 82 passed e 0 skipped, layout `pass`).
-**Change:** `.work/changes/archive/2026-10-07-favoritos/`
+**Status:** Entregue em 2026-10-07 (PR #4 para `develop`). QA `passed` (1 iteração, 5 findings resolvidos, nenhum em aberto, `functional: pass`, E2E 82 passed e 0 skipped, layout `pass`).
+**Change:** `.work/changes/archive/2026-10-07-favoritos/` · spec sincronizada em `.work/specs/favoritos/spec.md`
 
 **Evidências:**
 ### Requisito #L7 — Favoritos: persistência no client e página/aba que liste os favoritos

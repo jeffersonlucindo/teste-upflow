@@ -37,7 +37,7 @@ D31 (hidratação), D32 (abas e storage inválido), D35 (390 e 1280 px) e D42 (d
 
 **6.6 Build e `next dev` com a flag (resumo).** `CATALOGO_CACHE_COMPONENTS=1 npm run build` sem `.env.local` e sem rede: verde, com `/favoritos` estática. `next dev` com a flag: sem insight de blocking-route, overlay `data-error=false` em `/` e `/favoritos`, console sem erro. O build sem a flag segue verde. Registro em `.devflow.yaml > implementation.validation`: `cache_components`, `browser` (39 verificações) e `e2e_regression` (38 passed antes do spec novo).
 
-**QA** (`.work/changes/favoritos/.devflow.yaml > qa`; `status: passed`, `functional: pass`):
+**QA** (`.work/changes/archive/2026-10-07-favoritos/.devflow.yaml > qa`; `status: passed`, `functional: pass`):
 - E2E: specs `e2e/favoritos.spec.ts` (22 testes) e `e2e/shell.spec.ts` (gates de `/favoritos`), 82 passed e 0 skipped (41 em `desktop`, 41 em `mobile`).
 - Layout: `pass`. Gates `expectNoHorizontalOverflow`, `expectTokenColors`, `expectMinHeight`, `expectFontVariable` e `expectFocusRing` verdes em 1280 e 390 px; revisão visual sem divergência. Findings em aberto: nenhum (5 resolvidos na iteração 1).
 

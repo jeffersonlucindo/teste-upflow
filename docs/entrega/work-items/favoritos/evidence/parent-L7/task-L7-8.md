@@ -14,8 +14,8 @@ Os cinco comandos de `apply.validation` passaram, o build sem `.env.local` e sem
 ## Arquivos impactados
 | Arquivo | Ação | Descrição |
 |---------|------|-----------|
-| `.work/changes/favoritos/tasks.md` | alterado | Tasks 8.1 a 8.3 marcadas `[x]` |
-| `.work/changes/favoritos/.devflow.yaml` | alterado | `phase: evidence` e bloco `evidence` |
+| `.work/changes/archive/2026-10-07-favoritos/tasks.md` | alterado | Tasks 8.1 a 8.3 marcadas `[x]` |
+| `.work/changes/archive/2026-10-07-favoritos/.devflow.yaml` | alterado | `phase: evidence` e bloco `evidence` |
 
 ## Decisões técnicas
 Pilar 7: o build passa sem token e sem rede, pois `/favoritos` não lê o TMDB e nenhuma página o lê durante o build.

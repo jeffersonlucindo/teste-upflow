@@ -25,7 +25,7 @@ Decisão 9 (botão irmão do link: botão dentro de `a` é HTML inválido e o `a
 ## Resultado
 A listagem mostra um coração em cada card, a aba Favoritos mostra o badge e `/favoritos` é prerenderizada (`○`) nos dois modos de `cacheComponents`. O link do card em `/favoritos` é `/movie/{id}`, sem `?from=`.
 
-**QA** (`.work/changes/favoritos/.devflow.yaml > qa`; `status: passed`, `functional: pass`):
+**QA** (`.work/changes/archive/2026-10-07-favoritos/.devflow.yaml > qa`; `status: passed`, `functional: pass`):
 - E2E: specs `e2e/favoritos.spec.ts` (22 testes) e `e2e/shell.spec.ts` (gates de `/favoritos`), 82 passed e 0 skipped (41 em `desktop`, 41 em `mobile`).
 - Layout: `pass`. Gates `expectNoHorizontalOverflow`, `expectTokenColors`, `expectMinHeight`, `expectFontVariable` e `expectFocusRing` verdes em 1280 e 390 px; revisão visual sem divergência. Findings em aberto: nenhum (5 resolvidos na iteração 1).
 
