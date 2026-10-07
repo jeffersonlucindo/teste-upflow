@@ -64,10 +64,10 @@ ganha `voteCount`, porque `MovieCardData.voteCount` é obrigatório para o card 
   `EmptyState` com os textos do protótipo e ação "Explorar filmes" quando vazio, `MovieGrid` com os
   snapshots em `savedAt` desc quando há itens).
 - `src/components/movies/MovieCard.tsx` é alterado: `<FavoriteButton movie={movie} variant="icon" />`
-  entra na posição marcada (irmão do `<Link>` do pôster, `absolute top-2.5 right-2.5`), e
-  `MovieCardData` ganha os campos de origem `posterPath` e `releaseDate` (copiados por
-  `toMovieCardData`), que o botão precisa para montar o snapshot. `MovieCard` continua shared;
-  `MovieCard.test.tsx` é ajustado.
+  entra na posição marcada (irmão do `<Link>` do pôster, `absolute top-2.5 right-2.5`). O botão
+  monta o snapshot com `posterPath` e `releaseDate`, que `MovieCardData` já carrega desde o
+  `listagem-filmes` (oito campos). `MovieCard` continua shared; `MovieCard.test.tsx` ganha a
+  asserção do botão.
 - `src/components/layout/Header.tsx` é alterado: `<FavoritesBadge />` entra como `children` do
   `NavLink` de Favoritos (o slot previsto pelo `setup-catalogo`).
 - `src/app/favoritos/page.tsx` é reescrito: continua RSC estático (nenhum fetch, nenhuma leitura de
@@ -87,10 +87,9 @@ ganha `voteCount`, porque `MovieCardData.voteCount` é obrigatório para o card 
   `cacheComponents`. Spec em `specs/favoritos/spec.md`.
 ### Modificadas
 - `listagem-filmes` (spec do `listagem-filmes`): o cenário "Posição do botão de favorito" se cumpre
-  (o `FavoriteButton` entra como irmão do `<Link>`); `MovieCardData` recebe `posterPath` e
-  `releaseDate` de forma aditiva (nenhum consumidor existente quebra; `toMovieCardData` passa a
-  copiá-los). A spec do `listagem-filmes` não é editada: o comportamento novo está na spec deste
-  change.
+  (o `FavoriteButton` entra como irmão do `<Link>`); `MovieCardData` não muda (já traz `posterPath`
+  e `releaseDate` de origem, ver `listagem-filmes/design.md` decisão 9). A spec do `listagem-filmes`
+  não é editada: o comportamento novo está na spec deste change.
 - `projeto-base` (spec do `setup-catalogo`): o `Header` passa a renderizar o `FavoritesBadge` dentro
   do `NavLink` Favoritos (ilha client que devolve `null` no servidor); `/favoritos` deixa de ser
   esqueleto e continua estática (`○`) nos dois modos; o cenário "Páginas estáticas" segue valendo
@@ -113,7 +112,7 @@ ganha `voteCount`, porque `MovieCardData.voteCount` é obrigatório para o card 
   - [#L7] — `src/components/favorites/FavoriteButton.tsx` + `FavoriteButton.test.tsx`
   - [#L7] — `src/components/favorites/FavoritesBadge.tsx` + `FavoritesBadge.test.tsx`
   - [#L7] — `src/components/favorites/FavoritesList.tsx` + `FavoritesList.test.tsx` (D36)
-  - [#L7] — Alterar `src/components/movies/MovieCard.tsx` (`FavoriteButton icon`, `posterPath`/`releaseDate` em `MovieCardData`) e `MovieCard.test.tsx`
+  - [#L7] — Alterar `src/components/movies/MovieCard.tsx` (`FavoriteButton icon` na posição marcada) e `MovieCard.test.tsx`
   - [#L7] — Alterar `src/components/layout/Header.tsx` (`FavoritesBadge` no `NavLink` Favoritos)
   - [#L7] — Reescrever `src/app/favoritos/page.tsx`
   - [#L7] — Verificar no browser: favoritar → `/favoritos` → remover; reload; duas abas; payload corrompido; `localStorage` bloqueado; 390 e 1280 px; teclado
@@ -127,8 +126,8 @@ ganha `voteCount`, porque `MovieCardData.voteCount` é obrigatório para o card 
   `src/components/favorites/FavoritesBadge.tsx`, `src/components/favorites/FavoritesBadge.test.tsx`,
   `src/components/favorites/FavoritesList.tsx`, `src/components/favorites/FavoritesList.test.tsx`.
 - Arquivos modificados: `src/components/movies/MovieCard.tsx` (`FavoriteButton` na posição marcada;
-  `MovieCardData` com `posterPath` e `releaseDate`; `toMovieCardData` copia os dois),
-  `src/components/movies/MovieCard.test.tsx` (campos novos; botão presente), `src/components/layout/Header.tsx`
+  `MovieCardData` e `toMovieCardData` inalterados),
+  `src/components/movies/MovieCard.test.tsx` (botão presente, irmão do link), `src/components/layout/Header.tsx`
   (`FavoritesBadge` como `children` do `NavLink` Favoritos), `src/app/favoritos/page.tsx`
   (reescrito com `FavoritesList`), `.work/backlog.md` (estado de L7 no apply),
   `.work/design/components.md` e `.work/design/decisoes.md` (D30: `voteCount` no snapshot; no apply,

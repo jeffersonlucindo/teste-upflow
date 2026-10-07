@@ -141,7 +141,8 @@ do card) e `full` (botão primário com texto, usado pelo detalhe), com `aria-pr
 "Adicionar aos favoritos" / "Remover dos favoritos", recebendo o filme sem `savedAt`.
 Placement: `src/components/favorites/FavoriteButton.tsx` (client; `FavoriteButtonProps { movie:
 FavoriteMovie; variant: "icon" | "full" }`); inserção no card em `src/components/movies/MovieCard.tsx`
-(irmão do `<Link>` do pôster; `MovieCardData` com `posterPath` e `releaseDate`).
+(irmão do `<Link>` do pôster; `MovieCardData` já traz `posterPath` e `releaseDate`, contrato do
+`listagem-filmes`).
 
 #### Cenário: Variante icon
 - QUANDO o card renderiza

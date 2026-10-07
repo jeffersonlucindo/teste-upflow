@@ -4,9 +4,24 @@ workItems:
   provider: none
   parents: [L7]
   tasks: []
-phase: propose
+phase: apply
 artifacts:
   proposal: done
   design: done
   tasks: done
   specs: done
+implementation:
+  status: completed
+  completed_tasks: 23
+  total_tasks: 23
+  current_task: ""
+  validated: true
+  validation:
+    status: passed
+    last_run: 2026-10-07T15:12:07Z
+    failures: []
+    summary: "tokens:check, lint, typecheck, test (22 arquivos, 268 testes) e build verdes sem .env.local; /favoritos estática e / dinâmica"
+    cache_components: "build com CATALOGO_CACHE_COMPONENTS=1 verde sem .env.local (/ parcial, /favoritos estática); next dev com a flag sem insight de blocking-route (overlay data-error=false em / e /favoritos, console sem erro)"
+    browser: "grupo 6 verificado em Chromium contra next dev com a flag: 39 verificações (favoritar, payload com as sete chaves em savedAt desc, reload, duas abas, payload corrompido, item inválido, localStorage bloqueado, HTML do servidor, badge nunca em 0 com rede lenta, 390 e 1280 px, ordem de tabulação, anel de foco), duas execuções seguidas"
+    e2e_regression: "npm run e2e existente: 38 passed (desktop e mobile); o spec e2e/favoritos.spec.ts é da fase qa"
+  updated_at: 2026-10-07T15:12:07Z
