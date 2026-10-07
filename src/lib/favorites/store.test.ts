@@ -434,6 +434,27 @@ describe("createFavoritesStore", () => {
     unsubscribe();
   });
 
+  it("segue em memória quando a leitura lança, sem perder o que já foi lido", () => {
+    localStorage.setItem(FAVORITES_STORAGE_KEY, payload([snapshot({ savedAt: 100 })]));
+    const store = createFavoritesStore(() => localStorage);
+    expect(store.getSnapshot()).toHaveLength(1);
+
+    const getItem = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("blocked");
+    });
+    const setItem = vi.spyOn(Storage.prototype, "setItem");
+
+    expect(() => store.getSnapshot()).not.toThrow();
+    expect(store.getSnapshot().map((item) => item.id)).toEqual([MATRIX.id]);
+
+    store.toggle(DUNA, 200);
+
+    expect(store.getSnapshot().map((item) => item.id)).toEqual([DUNA.id, MATRIX.id]);
+    expect(setItem).not.toHaveBeenCalled();
+    getItem.mockRestore();
+    expect(storedPayload()).toEqual({ version: 1, items: [snapshot({ savedAt: 100 })] });
+  });
+
   it("segue em memória quando a gravação lança, sem perder o que já estava salvo", () => {
     localStorage.setItem(FAVORITES_STORAGE_KEY, payload([snapshot({ savedAt: 100 })]));
     const store = createFavoritesStore(() => localStorage);

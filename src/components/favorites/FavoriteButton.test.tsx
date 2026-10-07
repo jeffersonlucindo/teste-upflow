@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { renderToString } from "react-dom/server";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { toMovieCardData } from "@/components/movies/MovieCard";
 import { FAVORITES_STORAGE_KEY } from "@/lib/favorites/store";
@@ -31,7 +32,24 @@ function storedItems(): Record<string, unknown>[] {
   return raw ? JSON.parse(raw).items : [];
 }
 
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe("FavoriteButton", () => {
+  it("no servidor renderiza desligado, mesmo com o filme gravado", () => {
+    localStorage.setItem(
+      FAVORITES_STORAGE_KEY,
+      JSON.stringify({ version: 1, items: [{ ...MATRIX, savedAt: 100 }] }),
+    );
+
+    const html = renderToString(<FavoriteButton movie={MATRIX} variant="icon" />);
+
+    expect(html).toContain('aria-pressed="false"');
+    expect(html).not.toContain('aria-pressed="true"');
+    expect(html).toContain("Adicionar aos favoritos");
+  });
+
   it("icon começa desligado, com nome acessível e sem texto visível", () => {
     render(<FavoriteButton movie={MATRIX} variant="icon" />);
     const button = screen.getByRole("button", { name: "Adicionar aos favoritos" });
@@ -56,7 +74,7 @@ describe("FavoriteButton", () => {
 
   it("grava só as sete chaves do snapshot, mesmo recebendo os dados do card", async () => {
     const user = userEvent.setup();
-    const before = Date.now();
+    vi.spyOn(Date, "now").mockReturnValue(1234);
     render(<FavoriteButton movie={toMovieCardData(MATRIX)} variant="icon" />);
 
     await user.click(screen.getByRole("button"));
@@ -72,7 +90,7 @@ describe("FavoriteButton", () => {
       "voteCount",
     ]);
     expect(item).toMatchObject(MATRIX);
-    expect(item.savedAt).toBeGreaterThanOrEqual(before);
+    expect(item.savedAt).toBe(1234);
   });
 
   it("remove no segundo clique", async () => {
