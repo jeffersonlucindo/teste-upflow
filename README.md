@@ -78,13 +78,15 @@ src/
 │   ├── fonts.ts              next/font/local: heading e body
 │   ├── globals.css           @theme com os tokens de cor e estilos base
 │   ├── layout.tsx            html pt-BR, Header e container
-│   ├── page.tsx              /            (listagem)
+│   ├── page.tsx              /            (listagem: título e dois <Suspense>)
+│   ├── error.tsx             erro do segmento, com "Tentar novamente"
 │   ├── favoritos/page.tsx    /favoritos
 │   └── movie/[id]/           /movie/[id]  (previsto)
 ├── components/
 │   ├── layout/               Header, NavLink
-│   ├── ui/                   Button, ButtonLink
-│   ├── movies/               previsto
+│   ├── ui/                   Button, ButtonLink, EmptyState, ErrorState
+│   ├── movies/               FilterBar, FilterBarLoader, MovieResults, MovieGrid, MovieCard,
+│   │                         MovieGridSkeleton, Pagination, ListingTransition
 │   ├── movie-detail/         previsto
 │   └── favorites/            previsto
 └── lib/
@@ -98,7 +100,10 @@ src/
     │   ├── pickTrailer.ts    escolha do trailer
     │   ├── images.ts         URLs de pôster e de foto do elenco
     │   └── fixtures/         respostas de exemplo usadas nos testes
-    └── …                     previsto: listing/, favorites/, format/
+    ├── listing/
+    │   └── params.ts         URL da listagem ↔ estado (q, genre, sort, page)
+    ├── format/               nota ("7,2") e ano de lançamento
+    └── …                     previsto: favorites/
 e2e/                          testes de ponta a ponta e de layout (Playwright)
 ├── support/                  gates de layout, tokens e pré-requisito do TMDB
 └── *.spec.ts                 um arquivo por fluxo
@@ -165,8 +170,32 @@ Decisões aplicadas até aqui, cada uma com a alternativa considerada e o que se
 
 **Sem validação do JSON em runtime.** Os tipos da API seguem a referência oficial e foram conferidos contra a resposta real pela sonda; não há zod nem type guard. Se o TMDB mudar um campo, o sintoma é um valor ausente na tela, não um erro classificado.
 
+### Listagem
+
+**A URL é a única fonte do estado.** `q`, `genre`, `sort` e `page` ficam na URL de `/`, e `src/lib/listing/params.ts` converte nos dois sentidos, omitindo os padrões (`/`, e não `/?page=1`). Valor inválido vira o padrão e a página é limitada a 500. O parser devolve o mesmo objeto que `fetchListing` recebe: um formato só para URL, componentes e API. Link compartilhado, recarregar e o botão voltar funcionam sem código extra; o custo é um parser com testes. A alternativa era guardar os filtros em `useState`.
+
+**Busca exclusiva.** Com a busca preenchida, gênero e ordenação ficam desabilitados, descritos por um aviso ligado aos dois selects, e saem da URL. `/search/movie` não aceita gênero nem ordenação. Filtrar e ordenar localmente os 20 itens da página deixaria páginas quase vazias com "Próxima" ativa e reordenaria por nota um conjunto que veio por relevância. Buscar várias páginas e paginar no client seria o melhor produto e ficou fora.
+
+**A página não lê a URL.** `page.tsx` renderiza o título e dois `<Suspense>` irmãos: a barra de filtros e os resultados. A barra lê `useSearchParams()` por conta própria e os resultados recebem a `Promise` de `searchParams`. Assim o título, a barra desabilitada e o skeleton de 8 cards formam um shell que não depende da requisição, e não há `loading.tsx`, que esconderia o título e a barra a cada carga. Por consequência, o fallback da barra não pode ler a URL: ao abrir `/?q=matrix` com `cacheComponents` ligado, o campo aparece vazio por um instante.
+
+**`connection()` antes de buscar.** Os gêneros não dependem da URL, então o componente que os carrega chama `await connection()` para o `fetch` não entrar no shell nem rodar no build. Os resultados também chamam, depois de ler a URL: com a flag, o `partialPrefetching` resolve `searchParams` ao prerenderizar o destino de um link, e a ordenação por data lê o relógio. Sem isso o `next dev` acusava `blocking-prerender-current-time`. O custo é não haver prefetch dos resultados por link.
+
+**`replace` com debounce na digitação, `push` nos selects e na paginação.** A busca atualiza a URL 350 ms depois da última tecla, ou na hora com Enter, sem criar uma entrada de histórico por tecla. Trocar gênero, ordenação ou página cria entrada, e o voltar desfaz. O campo é não controlado: a URL que volta do servidor não sobrescreve o que foi digitado nesse meio-tempo, e ele só é reescrito quando a URL muda por outro caminho.
+
+**Transição compartilhada em vez de skeleton a cada troca.** As navegações da barra rodam dentro de uma transição cujo estado é compartilhado com a região dos resultados por um Context mínimo (`ListingTransition`), já que as duas ficam em `<Suspense>` irmãos. Durante a troca os cards anteriores continuam na tela, esmaecidos e com `aria-busy`, e os selects já mostram a opção escolhida. O skeleton só aparece na primeira carga. É a única ilha client além da barra e da tela de erro. Os links da paginação não passam por essa transição, então não esmaecem o grid.
+
+**Paginação por links no servidor.** "Anterior" e "Próxima" são `<Link>` renderizados no servidor; nos limites viram um texto com `aria-disabled`. Funciona sem JavaScript. Uma página acima do total mostra "Esta página não existe" com link para a última, em vez de redirecionar: uma resposta só, sem risco de laço, e a URL digitada continua visível.
+
+**Um componente para os estados excepcionais.** `EmptyState` atende busca vazia, filtro sem resultado, página inexistente e erro, com quatro ícones nomeados. `error.tsx` mantém o header e oferece "Tentar novamente", que refaz os dados do servidor com `router.refresh()` e limpa o erro com `reset()`. O Next 16.4 passou a recomendar a prop `retry()`, que faz as duas coisas; `reset()` continua suportada e foi mantida.
+
+**Grid de duas colunas no celular.** A 390 px o grid tem duas colunas e os selects dividem uma linha; de 640 px em diante as colunas se ajustam a um mínimo de 200 px, o que dá cinco a 1280 px, contra as quatro do protótipo. O contêiner do pôster não usa `overflow-hidden`, que cortava o anel de foco do link; quem arredonda é a imagem.
+
 ## Melhorias futuras
 
 - Type guard mínimo nas respostas do TMDB, para que uma mudança de formato vire `TmdbError` em vez de campo vazio na tela.
+- Busca combinada com gênero e ordenação, buscando algumas páginas e paginando no client.
+- Indicador de carregamento nos links da paginação (`useLinkStatus`) e `loading="eager"` no primeiro pôster.
+- Título `h1` em 40 px, como no protótipo; hoje está em 36 px.
+- Validar o `genre` da URL contra a lista de gêneros; hoje um id desconhecido cai no estado vazio.
 
 Demais itens a definir ao final da implementação.

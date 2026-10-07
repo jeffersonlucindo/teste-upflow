@@ -63,7 +63,7 @@ Placement: `src/components/movies/MovieResults.tsx` (RSC async; chama `fetchList
 
 #### Cenário: Página acima do total
 - QUANDO a URL pede uma página maior que `totalPages` (a API devolve `results: []`)
-- ENTÃO o sistema mostra o `EmptyState` "Esta página não existe" com a descrição "A lista tem N página(s)."
+- ENTÃO o sistema mostra o `EmptyState` "Esta página não existe" com a descrição "A lista tem N páginas." (ou "1 página")
 - E a ação "Ir para a última página" leva à mesma URL com `page=<totalPages>`
 - E nenhuma segunda requisição nem redirect acontece
 
@@ -102,8 +102,14 @@ Placement: `src/components/movies/FilterBar.tsx` (client; `SEARCH_DEBOUNCE_MS = 
 
 #### Cenário: Cards antigos durante a troca
 - QUANDO a navegação disparada pelo `FilterBar` está pendente
-- ENTÃO a região dos resultados tem `aria-busy="true"` e opacidade reduzida, com o status oculto "Atualizando resultados…"
+- ENTÃO a região dos resultados tem `aria-busy="true"` e opacidade reduzida, com o status oculto "Atualizando resultados…" fora da região ocupada
 - E o skeleton não é exibido (os cards anteriores ficam até os novos chegarem)
+- E os selects mostram a opção escolhida antes de a URL mudar
+
+#### Cenário: Busca superada por outra navegação
+- QUANDO uma busca já enviada ainda está pendente e o usuário troca o gênero ou a página
+- ENTÃO a URL final é a da última ação e o campo de busca fica vazio, acompanhando a URL
+- E a mesma busca pode ser enviada de novo
 
 #### Cenário: Voltar e avançar
 - QUANDO o usuário usa o botão voltar e a URL muda de `/?q=matrix` para `/`
