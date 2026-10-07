@@ -1,0 +1,7 @@
+{
+  "genres": [
+    { "id": 28, "name": "Ação" },
+    { "id": 12, "name": "Aventura" },
+    { "id": 878, "name": "Ficção científica" }
+  ]
+}

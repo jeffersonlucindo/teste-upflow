@@ -21,10 +21,11 @@ Fatos já verificados no explore (`.work/design/decisoes.md`, sem reabrir):
   include_adult` (D14, referência oficial): gênero e ordenação não se aplicam à busca.
 - `fetch.md` do Next 16: requisição com header `authorization` só entra no cache com
   `cache: "force-cache"` explícito (D20); é o único mecanismo honrado nos dois modos de D2.
-- Acima da página 500 o `/discover/movie` devolve 422 (D17, fontes da comunidade; confirmado na
-  task 5.4 deste change).
+- Acima da página 500 o `/discover/movie` devolve erro (D17: esperado 422 por fontes da comunidade; a sonda da
+  task 5.4 observou 400).
 - Pendências que este change resolve com uma chamada real: `translations` via
-  `append_to_response` (D18) e `include_video_language=pt,en,null` (D19).
+  `append_to_response` (D18) e `include_video_language` (D19; proposto `pt,en,null`, adotado
+  `pt-BR,pt,en,null` depois da verificação de 2026-10-07, ver decisão 13).
 
 Formato das respostas da v3 usado nos tipos abaixo (referência oficial do TMDB; os campos citados
 são os que o cliente lê — qualquer campo extra do JSON é ignorado): listas paginadas
@@ -39,8 +40,10 @@ real e atualiza tipos e fixtures se algo divergir.
 Contratos consumidos pelos próximos changes (de `.work/design/components.md`): `MovieCard` recebe
 `{ id, title, posterUrl: string | null, voteAverage, voteCount, releaseYear: number | null }`
 (derivado de `MovieSummary` + `posterUrl()` + ano de `releaseDate`); `FavoriteSnapshot` é
-`{ id, title, posterPath, voteAverage, releaseDate, savedAt }` (derivado de `MovieSummary` ou
-`MovieDetail`, que têm exatamente esses nomes); `Overview` recebe `{ text, language } | null`;
+`{ id, title, posterPath, voteAverage, voteCount, releaseDate, savedAt }` (derivado de `MovieSummary`
+ou `MovieDetail`, que têm exatamente esses nomes; D30 revisada no propose do `favoritos`:
+`voteCount` entra no snapshot porque `MovieCardData.voteCount` é obrigatório para "Sem nota");
+`Overview` recebe `{ text, language } | null`;
 `TrailerEmbed` recebe `{ key, name } | null`; `CastList` recebe até 8 `CastMember` ordenados por
 `order`; `FilterBar` recebe `genres: Genre[]`.
 
@@ -152,8 +155,8 @@ Contratos consumidos pelos próximos changes (de `.work/design/components.md`): 
    }
    ```
    `MovieSummary` e `MovieDetail` compartilham exatamente `id, title, posterPath, voteAverage,
-   releaseDate`, os campos de `FavoriteSnapshot` (D30): o `FavoriteButton` recebe qualquer um dos
-   dois sem adaptador. `posterPath` (não a URL) fica no domínio porque o snapshot persiste o caminho
+   voteCount, releaseDate`, os campos de `FavoriteSnapshot` (D30, com `voteCount` acrescentado no
+   propose do `favoritos`): o `FavoriteButton` recebe qualquer um dos dois sem adaptador. `posterPath` (não a URL) fica no domínio porque o snapshot persiste o caminho
    e a URL depende do tamanho (`w342` no card, `w500` no detalhe). `releaseDate` é string ISO ou
    `null` (a API manda `""` quando não há data); o ano é derivado em `src/lib/format/` no
    `listagem-filmes`. Sem `overview`/`genreIds`/`popularity` em `MovieSummary`: nenhum componente
@@ -174,7 +177,7 @@ Contratos consumidos pelos próximos changes (de `.work/design/components.md`): 
    → "TMDB não encontrou /movie/603 (HTTP 404)."; `unavailable` → "TMDB indisponível (HTTP 503)." ou
    "Falha de rede ao chamar o TMDB." (com `cause`). Em produção o Next redige a mensagem (só
    `digest`), então o `error.tsx` de cada segmento mostra texto genérico com "Tentar novamente";
-   o `kind` serve ao servidor e ao log. 422 (página > 500) cai em `unavailable` com o status na
+   o `kind` serve ao servidor e ao log. 422 ou 400 (página > 500; a sonda observou 400) cai em `unavailable` com o status na
    mensagem — o clamp de D17 impede que aconteça. Interpretação de D21 registrada: o `not_found`
    do detalhe é tratado **dentro** de `getMovieDetail`, que devolve `null` (decisão 7); o componente
    faz `if (!movie) notFound()`, sem `instanceof`. Os demais `kind` sobem até o `error.tsx`.
@@ -186,9 +189,13 @@ Contratos consumidos pelos próximos changes (de `.work/design/components.md`): 
    export const REVALIDATE_GENRES = 86_400;      // 24 h (D20)
    export const REVALIDATE_LISTING = 3_600;      // 1 h
    export const REVALIDATE_DETAIL = 3_600;       // 1 h
-   async function tmdbFetch<T>(path: string, params: Record<string, string>, revalidate: number): Promise<T>
+   interface TmdbConfig { token: string; language: string }
+   function readConfig(): TmdbConfig
+   async function tmdbFetch<T>(config: TmdbConfig, path: string, params: Record<string, string>, revalidate: number): Promise<T>
    ```
-   Passos: (a) `readConfig()` lê `process.env.TMDB_API_READ_TOKEN` **na chamada**, não no topo
+   Passos: (a) cada função pública chama `readConfig()` uma vez e passa o resultado ao
+   `tmdbFetch` (`getMovieDetail` reaproveita o mesmo `config.language` no mapeador, sem segunda
+   leitura); `readConfig()` lê `process.env.TMDB_API_READ_TOKEN` **na chamada**, não no topo
    do módulo, e lança `TmdbError("config")` se vazio; `TMDB_LANGUAGE` com fallback `pt-BR`;
    (b) `new URL(TMDB_API_BASE + path)` com `searchParams` = `{ language, ...params }` (a ordem é
    estável: a URL é a chave do cache); (c) `fetch(url, { headers: { Authorization: "Bearer " +
@@ -207,7 +214,7 @@ Contratos consumidos pelos próximos changes (de `.work/design/components.md`): 
    ```ts
    export async function getGenres(): Promise<Genre[]> // GET /genre/movie/list · revalidate 86 400 s
    ```
-   `toGenres(await tmdbFetch<TmdbGenreListDto>("/genre/movie/list", {}, REVALIDATE_GENRES))`.
+   `toGenres(await tmdbFetch<TmdbGenreListDto>(readConfig(), "/genre/movie/list", {}, REVALIDATE_GENRES))`.
    A lista vem no idioma de `TMDB_LANGUAGE`. Não cacheia em memória nem no build: com
    `cacheComponents` ligado o `await connection()` do `FilterBarLoader` tira a chamada do shell.
 6. **Parâmetros da listagem** (`params.ts`, D13–D17; D14 só no lado da API):
@@ -242,7 +249,7 @@ Contratos consumidos pelos próximos changes (de `.work/design/components.md`): 
    export async function fetchListing(query: ListingQuery): Promise<ListingResult> // revalidate 3 600 s
    ```
    `const { path, params } = buildListingRequest(query, todayUtc())` →
-   `toListingResult(await tmdbFetch<TmdbPagedDto<TmdbMovieListItemDto>>(path, params, REVALIDATE_LISTING))`.
+   `toListingResult(await tmdbFetch<TmdbPagedDto<TmdbMovieListItemDto>>(readConfig(), path, params, REVALIDATE_LISTING))`.
    Quando a página pedida é maior que `totalPages`, a API devolve `results: []` sem erro;
    `fetchListing` não refaz a chamada — o `listagem-filmes` decide a UI (`EmptyState` com link
    para a última página) usando `page` e `totalPages` do resultado. Alternativa descartada:
@@ -250,11 +257,11 @@ Contratos consumidos pelos próximos changes (de `.work/design/components.md`): 
 7. **`getMovieDetail` e as pendências** (D18, D19, D21):
    ```ts
    export const DETAIL_APPEND = "credits,videos,translations";
-   export const VIDEO_LANGUAGES = "pt,en,null";
+   export const VIDEO_LANGUAGES = "pt-BR,pt,en,null"; // `pt` sozinho só casa com pt-PT
    export async function getMovieDetail(id: number): Promise<MovieDetail | null> // revalidate 3 600 s; null em 404
    ```
-   Caminho principal (uma chamada): `GET /movie/{id}?append_to_response=credits,videos,translations&include_video_language=pt,en,null`
-   → `toMovieDetail(dto, language)`. `TmdbError` com `kind === "not_found"` é capturada e vira
+   Caminho principal (uma chamada): `GET /movie/{id}?append_to_response=credits,videos,translations&include_video_language=pt-BR,pt,en,null`
+   → `toMovieDetail(dto, config.language)`. `TmdbError` com `kind === "not_found"` é capturada e vira
    `null`; qualquer outro `kind` sobe. A sonda da task 5 decide entre os caminhos abaixo; o apply
    implementa **só** o confirmado (sem código morto) e preenche a tabela "Resultado das
    verificações" no fim desta seção:
@@ -264,13 +271,16 @@ Contratos consumidos pelos próximos changes (de `.work/design/components.md`): 
      `GET /movie/{id}` com `language=en-US` (mesmo `revalidate`) e injeta o resultado como
      `translations = { translations: [{ iso_639_1: "en", iso_3166_1: "US", data: { overview } }] }`
      antes do mapeador; `pickOverview` não muda.
-   - **D19 include_video_language.** Confirmado = com `language=pt-BR` e
-     `include_video_language=pt,en,null` vêm vídeos `en` → nada muda. Fallback = o parâmetro não
+   - **D19 include_video_language.** Confirmado = com `language=pt-BR` e o parâmetro vêm vídeos
+     `en` junto com os `pt` → uma chamada só. O valor proposto era `pt,en,null`; a verificação de
+     2026-10-07 mostrou que `pt` sozinho casa só com pt-PT e tira os pt-BR da resposta, então o
+     valor adotado é `pt-BR,pt,en,null` (a prioridade de `pickTrailer` não muda: pt-BR e pt-PT têm
+     `iso_639_1 = "pt"`). Fallback = o parâmetro não
      tem efeito → quando `videos.results` vier vazio, segunda chamada
      `GET /movie/{id}/videos` com `language=en-US` e os `results` dela entram em `pickTrailer`.
      Se o parâmetro for simplesmente ignorado mas os vídeos `en` já vierem, ele fica (inofensivo)
      e a linha de D19 registra "sem efeito observável".
-   - **D17 422.** Só confirma; o clamp já protege nos dois casos.
+   - **D17 página > 500.** Só registra o status; o clamp já protege nos dois casos.
 8. **Mapeadores** (`mappers.ts`, pilar 3):
    ```ts
    export const MAIN_CAST_LIMIT = 8;
@@ -345,9 +355,9 @@ Contratos consumidos pelos próximos changes (de `.work/design/components.md`): 
     preenchidos pelas seleções). Nenhum teste importa `client.ts`.
 13. **Sonda e verificação real** (critério do change) — `scripts/tmdb-probe.mjs` (ESM, Node 22,
     sem dependências, mesmo estilo do `check-tokens.mjs`): lê `TMDB_API_READ_TOKEN` (sai com
-    código 1 nomeando a variável se faltar) e `TMDB_LANGUAGE`; faz (1) `GET /movie/603?append_to_response=credits,videos,translations&include_video_language=pt,en,null`
+    código 1 nomeando a variável se faltar) e `TMDB_LANGUAGE`; faz (1) `GET /movie/603?append_to_response=credits,videos,translations&include_video_language=pt-BR,pt,en,null`
     e imprime status, tamanho de `overview`, se `translations` veio e quantos idiomas, e os
-    `iso_639_1`/`type`/`official` de `videos.results`; (2) a mesma URL **sem**
+    `iso_639_1-iso_3166_1`/`type`/`official` de `videos.results` (o país separa pt-BR de pt-PT); (2) a mesma URL **sem**
     `include_video_language` e imprime a diferença de vídeos; (3) `GET /discover/movie?page=501`
     e imprime status e `status_message`. Também aceita um id como argumento para testar um filme
     sem sinopse em pt-BR. Uso: `node --env-file=.env.local scripts/tmdb-probe.mjs [id]`. A saída
@@ -356,9 +366,9 @@ Contratos consumidos pelos próximos changes (de `.work/design/components.md`): 
     Resultado das verificações (preencher no apply, task 5.5):
     | Pendência | Esperado | Resultado | Caminho adotado | Data |
     |---|---|---|---|---|
-    | D18 `translations` via `append_to_response` | array `translations.translations` presente | pendente | pendente (confirmado: uma chamada · fallback: `en-US` quando `overview` vazio) | — |
-    | D19 `include_video_language=pt,en,null` | vídeos `en` com `language=pt-BR` | pendente | pendente (confirmado: nada muda · fallback: `/movie/{id}/videos?language=en-US`) | — |
-    | D17 422 acima da página 500 | HTTP 422 | pendente | clamp em `params.ts` nos dois casos | — |
+    | D18 `translations` via `append_to_response` | array `translations.translations` presente | Presente: 51 idiomas (47 com `overview`) no 603; nos ids 20000 e 500000, sem `overview` pt-BR (`""`), `en-US` presente com texto | Confirmado: uma chamada, sem fallback | 2026-10-07 |
+    | D19 `include_video_language` (proposto `pt,en,null`) | vídeos `en` com `language=pt-BR` | Em `/movie/{id}/videos` com `language=pt-BR`: sem o parâmetro vêm só os vídeos pt-BR (603: 2; 598: 3; 27205: 2); com `pt,en,null` vêm en-US e pt-PT, **sem os pt-BR** (603: 29 en; 598: 11 en + 1 pt-PT; 27205: 27 en + 1 pt-PT), porque `pt` sozinho casa só com pt-PT; com `pt-BR,pt,en,null` vêm os três (603: 29 en + 2 pt-BR; 598: 11 en + 3 pt-BR + 1 pt-PT; 27205: 27 en + 2 pt-BR + 1 pt-PT). Na sonda com o valor adotado: 603 traz 29 en-US + 2 pt-BR (2 pt-BR sem o parâmetro); 20000 traz 1 en-US (0 sem); 500000 não tem vídeos | O parâmetro tem efeito; valor trocado para `pt-BR,pt,en,null` (aprovado pelo usuário), uma chamada, sem fallback; `pickTrailer` não muda | 2026-10-07 |
+    | D17 erro acima da página 500 | HTTP 422 | HTTP 400, `Invalid page: Pages start at 1 and max at 500. They are expected to be an integer.` (status diferente do esperado; a mensagem confirma o limite de 500) | clamp em `params.ts` (nada no código; 400 já cai em `unavailable`) | 2026-10-07 |
 14. **Documentação** — README (seção "Decisões técnicas e trade-offs"): um parágrafo por decisão
     D12, D13, D15, D16, D17, D18, D19, D20, D21, D23, com o resultado da sonda em D18/D19; "Como
     rodar" ganha a linha da sonda ("para conferir o token: `node --env-file=.env.local
@@ -385,7 +395,8 @@ Contratos consumidos pelos próximos changes (de `.work/design/components.md`): 
   confere.
 - Rótulo de idioma do `overview` principal assume que a API devolveu o idioma pedido → se o TMDB
   passar a cair em inglês sozinho, o aviso de idioma não apareceria; a sonda com um filme sem
-  sinopse pt-BR (argumento `[id]`) confere o comportamento atual.
+  sinopse pt-BR (argumento `[id]`) confere o comportamento atual. Verificado em 2026-10-07 nos ids
+  20000 e 500000: a API devolve `overview` vazio (não cai em inglês), então o rótulo vale.
 - Sem validação de JSON em runtime → se a API mudar um campo, o erro aparece como `undefined` na
   UI e não como `TmdbError`; type guard mínimo listado em "Melhorias futuras" do README.
 - 429 sem retry → o `error.tsx` mostra "Tentar novamente"; o limite do TMDB é alto para o uso

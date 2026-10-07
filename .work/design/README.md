@@ -17,7 +17,7 @@
 | `screens/pdf/*.png` | Recortes das três telas do **PDF original** do teste | `Teste Técnico Desenvolvedor Frontend.pdf` |
 | `tokens/tokens.json` | Design System **"Catálogo."**: 14 tokens de cor, tema escuro único | cópia de `reference/catalogo-filmes/design/` |
 | `tokens/README.md` | Princípios, mapa de uso por elemento, contraste WCAG, uso no Tailwind | idem |
-| `decisoes.md` | **Decisões técnicas** D1–D43 (decisão, alternativas, trade-off, onde registrar) | `/devflow:explore` de 2026-10-06 |
+| `decisoes.md` | **Decisões técnicas** D1–D44 (decisão, alternativas, trade-off, onde registrar) | `/devflow:explore` de 2026-10-06 |
 | `components.md` | **Inventário de componentes** (pasta, tela, server/client, tokens, props, estados) e fronteira server × client | idem |
 | `reference/catalogo-filmes/` | Bundle gerado pelo Claude Design junto com as telas. **Referência visual apenas**: código, changes OpenSpec e workflow dele não são baseline (ver seção abaixo). Fora do git. | gerado em 2026-10-06, 1 commit |
 

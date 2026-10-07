@@ -1,0 +1,125 @@
+$ node --env-file=.env.local scripts/tmdb-probe.mjs 603
+[1] GET /3/movie/603?language=pt-BR&append_to_response=credits%2Cvideos%2Ctranslations&include_video_language=pt-BR%2Cpt%2Cen%2Cnull
+  status: 200
+  título: Matrix · idioma original: en
+  overview.length (pt-BR): 495
+  credits.cast: 37
+  translations: presente, 51 idioma(s), 47 com overview
+    com overview: en-US de-DE es-ES cs-CZ ru-RU fr-FR pt-PT hu-HU da-DK zh-CN it-IT tr-TR nl-NL sv-SE fi-FI ja-JP pl-PL mk-MK sk-SK he-IL no-NO el-GR bg-BG th-TH ko-KR uk-UA ro-RO sr-RS id-ID fa-IR bs-BS pt-BR es-MX zh-TW fr-CA hr-HR lt-LT zh-HK gl-ES sl-SI vi-VN lv-LV ar-SA ca-ES eo-EO et-EE az-AZ
+  vídeos: 31 (por idioma e país: en-US=29, pt-BR=2)
+    en-US/Featurette/não oficial/YouTube  2026-07-10T19:00:28.000Z
+    en-US/Featurette/oficial/YouTube  2025-10-02T16:00:30.000Z
+    en-US/Featurette/oficial/YouTube  2025-09-25T16:00:01.000Z
+    en-US/Behind the Scenes/oficial/YouTube  2025-07-18T16:01:12.000Z
+    en-US/Trailer/oficial/YouTube  2024-09-17T17:49:33.000Z
+    en-US/Teaser/oficial/YouTube  2024-08-13T15:00:21.000Z
+    en-US/Trailer/oficial/YouTube  2024-04-26T11:43:36.000Z
+    en-US/Clip/oficial/YouTube  2024-04-03T17:05:26.000Z
+    en-US/Clip/oficial/YouTube  2024-04-03T16:19:27.000Z
+    en-US/Clip/oficial/YouTube  2024-04-03T08:35:23.000Z
+    en-US/Clip/oficial/YouTube  2024-04-02T15:40:42.000Z
+    en-US/Featurette/oficial/YouTube  2024-04-01T22:18:29.000Z
+    en-US/Clip/oficial/YouTube  2024-04-01T18:00:06.000Z
+    en-US/Clip/oficial/YouTube  2024-04-01T16:00:32.000Z
+    en-US/Clip/oficial/YouTube  2024-03-31T17:00:24.000Z
+    en-US/Clip/oficial/YouTube  2024-03-31T14:00:35.000Z
+    en-US/Clip/oficial/YouTube  2024-03-30T18:00:06.000Z
+    en-US/Clip/oficial/YouTube  2024-03-30T16:00:39.000Z
+    en-US/Clip/oficial/YouTube  2024-03-25T11:07:38.000Z
+    en-US/Clip/oficial/YouTube  2024-03-20T17:37:25.000Z
+    pt-BR/Trailer/não oficial/YouTube  2023-12-11T22:55:56.000Z
+    en-US/Trailer/oficial/YouTube  2021-05-26T18:00:11.000Z
+    en-US/Featurette/oficial/YouTube  2021-03-29T16:10:43.000Z
+    en-US/Featurette/oficial/YouTube  2021-03-29T16:03:38.000Z
+    en-US/Clip/oficial/YouTube  2021-03-08T18:59:50.000Z
+    en-US/Trailer/oficial/YouTube  2019-06-28T09:52:17.000Z
+    en-US/Featurette/não oficial/YouTube  2019-02-12T18:06:04.000Z
+    pt-BR/Trailer/não oficial/YouTube  2017-09-12T22:34:11.000Z
+    en-US/Featurette/oficial/YouTube  2016-02-04T20:37:41.000Z
+    en-US/Featurette/oficial/YouTube  2016-02-04T20:37:41.000Z
+    en-US/Featurette/oficial/YouTube  2013-08-06T22:55:59.000Z
+
+[2] GET /3/movie/603?language=pt-BR&append_to_response=credits%2Cvideos%2Ctranslations
+  status: 200
+  vídeos: 2 (por idioma e país: pt-BR=2)
+    pt-BR/Trailer/não oficial/YouTube  2023-12-11T22:55:56.000Z
+    pt-BR/Trailer/não oficial/YouTube  2017-09-12T22:34:11.000Z
+  diferença: 31 com o parâmetro, 2 sem; 29 só com o parâmetro (por idioma e país: en-US=29)
+
+[3] GET /3/discover/movie?language=pt-BR&page=501
+  status: 400
+  status_message: Invalid page: Pages start at 1 and max at 500. They are expected to be an integer.
+
+tmdb-probe: token aceito; três chamadas concluídas.
+
+$ node --env-file=.env.local scripts/tmdb-probe.mjs 20000
+[1] GET /3/movie/20000?language=pt-BR&append_to_response=credits%2Cvideos%2Ctranslations&include_video_language=pt-BR%2Cpt%2Cen%2Cnull
+  status: 200
+  título: Uma Aventura na Noite · idioma original: en
+  overview.length (pt-BR): 0
+  credits.cast: 21
+  translations: presente, 12 idioma(s), 10 com overview
+    com overview: en-US fr-FR de-DE it-IT es-ES nl-NL ko-KR zh-CN ru-RU zh-HK
+  vídeos: 1 (por idioma e país: en-US=1)
+    en-US/Trailer/não oficial/YouTube  2010-04-25T17:20:58.000Z
+
+[2] GET /3/movie/20000?language=pt-BR&append_to_response=credits%2Cvideos%2Ctranslations
+  status: 200
+  vídeos: 0 (por idioma e país: nenhum)
+  diferença: 1 com o parâmetro, 0 sem; 1 só com o parâmetro (por idioma e país: en-US=1)
+
+[3] GET /3/discover/movie?language=pt-BR&page=501
+  status: 400
+  status_message: Invalid page: Pages start at 1 and max at 500. They are expected to be an integer.
+
+tmdb-probe: token aceito; três chamadas concluídas.
+
+$ node --env-file=.env.local scripts/tmdb-probe.mjs 500000
+[1] GET /3/movie/500000?language=pt-BR&append_to_response=credits%2Cvideos%2Ctranslations&include_video_language=pt-BR%2Cpt%2Cen%2Cnull
+  status: 200
+  título: Bombe’ Dua: Dumba’-Dumba’ · idioma original: id
+  overview.length (pt-BR): 0
+  credits.cast: 4
+  translations: presente, 1 idioma(s), 1 com overview
+    com overview: en-US
+  vídeos: 0 (por idioma e país: nenhum)
+
+[2] GET /3/movie/500000?language=pt-BR&append_to_response=credits%2Cvideos%2Ctranslations
+  status: 200
+  vídeos: 0 (por idioma e país: nenhum)
+  diferença: 0 com o parâmetro, 0 sem; 0 só com o parâmetro (por idioma e país: nenhum)
+
+[3] GET /3/discover/movie?language=pt-BR&page=501
+  status: 400
+  status_message: Invalid page: Pages start at 1 and max at 500. They are expected to be an integer.
+
+tmdb-probe: token aceito; três chamadas concluídas.
+
+
+# Checagem complementar de include_video_language (2026-10-07)
+# Fora da sonda: GET /movie/{id}/videos?language=pt-BR com variações do parâmetro (ivl), para os ids 603, 598 e 27205.
+# Cada linha: id, valor do parâmetro, status HTTP e contagem de vídeos por iso_639_1-iso_3166_1.
+603 ivl=(ausente) 200 {"pt-BR":2}
+603 ivl=pt,en,null 200 {"en-US":29}
+603 ivl=pt-BR,en,null 200 {"en-US":29,"pt-BR":2}
+603 ivl=pt-BR,pt,en,null 200 {"en-US":29,"pt-BR":2}
+603 ivl=pt 200 {}
+603 ivl=pt-BR 200 {"pt-BR":2}
+603 ivl=en,pt,null 200 {"en-US":29}
+603 ivl=pt,en 200 {"en-US":29}
+598 ivl=(ausente) 200 {"pt-BR":3}
+598 ivl=pt,en,null 200 {"en-US":11,"pt-PT":1}
+598 ivl=pt-BR,en,null 200 {"en-US":11,"pt-BR":3}
+598 ivl=pt-BR,pt,en,null 200 {"en-US":11,"pt-BR":3,"pt-PT":1}
+598 ivl=pt 200 {"pt-PT":1}
+598 ivl=pt-BR 200 {"pt-BR":3}
+598 ivl=en,pt,null 200 {"en-US":11,"pt-PT":1}
+598 ivl=pt,en 200 {"en-US":11,"pt-PT":1}
+27205 ivl=(ausente) 200 {"pt-BR":2}
+27205 ivl=pt,en,null 200 {"en-US":27,"pt-PT":1}
+27205 ivl=pt-BR,en,null 200 {"en-US":27,"pt-BR":2}
+27205 ivl=pt-BR,pt,en,null 200 {"en-US":27,"pt-BR":2,"pt-PT":1}
+27205 ivl=pt 200 {"pt-PT":1}
+27205 ivl=pt-BR 200 {"pt-BR":2}
+27205 ivl=en,pt,null 200 {"en-US":27,"pt-PT":1}
+27205 ivl=pt,en 200 {"en-US":27,"pt-PT":1}

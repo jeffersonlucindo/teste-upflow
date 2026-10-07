@@ -2,7 +2,7 @@
 
 Catálogo de filmes sobre a API pública do TMDB, feito para o teste técnico de Desenvolvedor Frontend da UpFlow (enunciado em [`DESAFIO.md`](DESAFIO.md)).
 
-> **Estado atual:** base do projeto. Já existem o scaffold, o Design System, o shell de navegação e as páginas `/` e `/favoritos` com o esqueleto visual. Listagem, busca, filtros, detalhe e favoritos ainda não foram implementados.
+> **Estado atual:** base do projeto e camada de dados. Já existem o scaffold, o Design System, o shell de navegação, as páginas `/` e `/favoritos` com o esqueleto visual e o cliente do TMDB em `src/lib/tmdb/`. Listagem, busca, filtros, detalhe e favoritos ainda não foram implementados.
 
 ## Como rodar
 
@@ -20,6 +20,22 @@ Abra <http://localhost:3000>.
 
 Em `.env.local`, preencha `TMDB_API_READ_TOKEN` com o **API Read Access Token (v4)** da sua conta em <https://www.themoviedb.org/settings/api>. O token é lido só no servidor e nunca recebe o prefixo `NEXT_PUBLIC_`. Nesta etapa nenhuma página chama o TMDB, então `npm run dev` e `npm run build` funcionam mesmo sem `.env.local`.
 
+Para conferir o token sem subir a aplicação:
+
+```bash
+node --env-file=.env.local scripts/tmdb-probe.mjs        # ou: ... tmdb-probe.mjs <id do filme>
+```
+
+A sonda faz três chamadas reais (detalhe do filme 603 com elenco, vídeos e traduções; a mesma chamada sem o filtro de idioma dos vídeos; a página 501 do discover) e imprime um resumo de cada uma. Sai com código 1 se o token faltar ou for recusado e nunca imprime o token.
+
+### Segurança do token
+
+- O token vai no header `Authorization: Bearer`, nunca na URL: uma `api_key` na query string apareceria em logs de acesso e de erro.
+- Só `src/lib/tmdb/client.ts` lê `TMDB_API_READ_TOKEN`, e lê a cada chamada, não no carregamento do módulo. Por isso o build passa sem `.env.local`.
+- `client.ts` começa com `import "server-only"`: se um componente client importar o cliente, o build falha em vez de levar o token para o bundle do browser.
+- A variável nunca usa o prefixo `NEXT_PUBLIC_`, e `.env.local` está no `.gitignore`. Só o `.env.example`, sem valor, é versionado.
+- Não há route handler servindo de proxy: os Server Components chamam o TMDB direto, então nenhum endpoint do app expõe a API com o token do servidor.
+
 ## Scripts
 
 | Script | O que faz |
@@ -33,6 +49,7 @@ Em `.env.local`, preencha `TMDB_API_READ_TOKEN` com o **API Read Access Token (v
 | `npm run test:watch` | Vitest em modo watch. |
 | `npm run tokens:check` | Confere `tokens.json` contra o `@theme` e proíbe cor literal em `src/`. |
 | `npm run check` | `tokens:check`, `lint`, `typecheck` e `test` em sequência. |
+| `npm run e2e` | Playwright: faz o build, sobe o servidor na porta 3100 e roda os testes de ponta a ponta e de layout em 1280 e 390 px. Na primeira vez, rode `npx playwright install chromium`. |
 
 ## Flags
 
@@ -70,11 +87,27 @@ src/
 │   ├── movies/               previsto
 │   ├── movie-detail/         previsto
 │   └── favorites/            previsto
-└── lib/                      previsto: tmdb/, listing/, favorites/, format/
+└── lib/
+    ├── tmdb/                 única porta para a API do TMDB
+    │   ├── client.ts         server-only: getGenres, fetchListing, getMovieDetail
+    │   ├── types.ts          tipos de domínio e formato cru da API (sufixo Dto)
+    │   ├── errors.ts         TmdbError com kind
+    │   ├── params.ts         parâmetros de /discover/movie e /search/movie
+    │   ├── mappers.ts        resposta da API → tipos de domínio
+    │   ├── pickOverview.ts   sinopse com fallback de idioma
+    │   ├── pickTrailer.ts    escolha do trailer
+    │   ├── images.ts         URLs de pôster e de foto do elenco
+    │   └── fixtures/         respostas de exemplo usadas nos testes
+    └── …                     previsto: listing/, favorites/, format/
+e2e/                          testes de ponta a ponta e de layout (Playwright)
+├── support/                  gates de layout, tokens e pré-requisito do TMDB
+└── *.spec.ts                 um arquivo por fluxo
+playwright.config.ts          build de produção, projetos desktop (1280 px) e mobile (390 px)
 scripts/check-tokens.mjs      guardrail do Design System
+scripts/tmdb-probe.mjs        confere o token e o comportamento real da API
 ```
 
-Os testes ficam ao lado do arquivo testado (`NavLink.test.tsx`). Não há pasta `utils/` ou `helpers/` genérica.
+Os testes ficam ao lado do arquivo testado (`NavLink.test.tsx`, `params.test.ts`). Não há pasta `utils/` ou `helpers/` genérica, nem `index.ts` em `lib/tmdb/`: cada import aponta o módulo exato (`@/lib/tmdb/client`, `@/lib/tmdb/images`), o que deixa visível quem depende do lado servidor.
 
 ## Decisões técnicas e trade-offs
 
@@ -92,7 +125,9 @@ Decisões aplicadas até aqui, cada uma com a alternativa considerada e o que se
 
 **`src/` organizado por domínio.** `app/` para rotas, `components/<domínio>/` e `lib/<domínio>/`, com o teste ao lado do arquivo. Fica claro quem é dono de cada arquivo; o custo é um nível a mais de pasta.
 
-**Vitest 5 com Testing Library (jsdom).** `npm run test` é execução única, sem watch. Funções puras e componentes client ou shared têm teste unitário. Server Components assíncronos não são testáveis no Vitest, então são verificados no browser.
+**Vitest 5 com Testing Library (jsdom).** `npm run test` é execução única, sem watch. Funções puras e componentes client ou shared têm teste unitário. Server Components assíncronos não são testáveis no Vitest, então ficam para os testes de ponta a ponta.
+
+**Playwright para ponta a ponta e layout.** `npm run e2e` roda contra o build de produção, em 1280 e 390 px, e cobre o que o Vitest não alcança: Server Components assíncronos, navegação e o layout renderizado. Os testes chegam a cada tela como o usuário chega (pelo header, pelo card, pela busca) e usam dados reais do TMDB, com asserções sobre estrutura e comportamento, não sobre um título específico. Em cada tela, `e2e/support/layout.ts` confere que toda cor computada é um token de `tokens.json`, que não há rolagem horizontal, que os controles têm 44 px de altura, que as fontes são as declaradas e que o foco por teclado mostra o anel. É a versão em runtime do `tokens:check`, que só vê o código-fonte. O custo é uma devDependency, o download do Chromium e alguns segundos de build por execução; como as telas com dados precisam de token e de rede, o `e2e` fica fora do `check`, e sem token esses testes aparecem como pulados, não como aprovados. Comparação de screenshot por diff de pixel foi descartada: os dados do TMDB mudam a cada dia.
 
 **`scripts/check-tokens.mjs`.** Script próprio, sem dependências, que confere `tokens.json` contra o `@theme` e falha se houver cor literal em `src/`. É um guardrail barato e visível para o Design System; custa manter o script. A alternativa era stylelint ou nenhuma verificação.
 
@@ -106,6 +141,32 @@ Decisões aplicadas até aqui, cada uma com a alternativa considerada e o que se
 
 **`Button` e `ButtonLink` em `components/ui/`.** Variantes `primary` (`bg-accent text-on-accent`) e `outline` (`border-border-strong bg-bg-base text-text-primary`), ambas com 44 px de altura mínima. As classes de botão ficam em um lugar só, o que evita que botão e link divirjam.
 
+### Dados do TMDB
+
+**Uma porta só, restrita ao servidor.** Todo acesso à API passa por `src/lib/tmdb/client.ts`, com `import "server-only"` e Bearer no header. As alternativas eram a `api_key` na URL, que vaza em log, e um route handler como proxy, que acrescenta um salto sem ganho quando quem chama já é um Server Component. Os outros sete módulos da pasta são puros e podem ser importados de qualquer lado; os componentes recebem tipos de domínio (`MovieSummary`, `MovieDetail`, `Genre`, `CastMember`) e nunca o JSON cru. O custo é que `client.ts` não tem teste unitário, porque `server-only` lança fora de um Server Component: a lógica fica nas funções puras, testadas com fixtures, e o cliente é exercitado pela sonda e pelas páginas.
+
+**"Populares" é o `/discover/movie` ordenado por popularidade.** A listagem usa sempre o discover, com `sort_by=popularity.desc` e `include_adult=false`, em vez de `/movie/popular` sem filtros e discover com filtros. Um caminho só, e gênero e ordenação compõem sobre ele. A ordem difere um pouco da lista oficial de populares.
+
+**Corte de votos só na ordenação por nota.** Com `sort=rating` a requisição leva `vote_count.gte=200` (constante `RATING_MIN_VOTE_COUNT`). Sem o corte, o topo é ocupado por filmes com um voto e nota 10. Aplicar o corte também nas outras ordenações esconderia filmes de nicho, então ele não vai.
+
+**Corte de data só na ordenação por lançamento.** Com `sort=release` a requisição leva `primary_release_date.lte=<hoje em UTC>`, para a lista não começar por filmes anunciados para anos à frente. A data é calculada na requisição, nunca no carregamento do módulo, e muda a URL uma vez por dia: o cache dessa listagem tem um bucket diário.
+
+**Cache somente no `fetch`.** Cada requisição usa `cache: "force-cache"` com `next: { revalidate }`: 86 400 s (24 h) para gêneros e 3 600 s (1 h) para listagens e detalhe, com as constantes em `client.ts`. É o único mecanismo que vale com e sem `cacheComponents`, e uma requisição com header `Authorization` só entra no cache do Next com `force-cache` explícito. Perde-se a granularidade por função de `"use cache"` e os perfis de `cacheLife`. Dentro de um mesmo render, chamadas repetidas à mesma URL (o detalhe em `generateMetadata` e na página) viram uma requisição só.
+
+**Erros classificados.** Toda falha vira `TmdbError` com `kind`: `config` (token ausente; a mensagem nomeia a variável e o arquivo), `unauthorized` (401 e 403), `not_found` (404), `rate_limited` (429) e `unavailable` (demais status, falha de rede e corpo que não é JSON). O detalhe de um filme inexistente devolve `null` em vez de lançar, e a página decide pelo `not-found`. Em produção o Next redige a mensagem de erros do servidor, então a tela de erro mostra um texto genérico e o `kind` serve ao log. Não há retry automático em 429.
+
+**Limite de 500 páginas.** O discover não passa da página 500. A sonda pediu a 501 e a API respondeu HTTP 400 (`Invalid page: Pages start at 1 and max at 500`), não o 422 que se esperava. Por isso `totalPages` é limitado a 500 no mapper e a página pedida passa por `clampPage` antes de virar parâmetro: a chamada inválida nunca sai. Quando a API informa `total_pages` 0, o mapper garante pelo menos 1, para a paginação mostrar "Página 1 de 1". O custo é não alcançar resultados além da página 500 (10 000 filmes).
+
+**Sinopse em uma chamada, com fallback de idioma.** O detalhe usa `/movie/{id}?append_to_response=credits,videos,translations`, uma chamada só (cerca de 40 KB a mais). A sonda confirmou que `translations` vem na mesma resposta (51 idiomas no filme 603). Para um filme sem sinopse em pt-BR (ids 20000 e 500000), a API devolve `overview` vazio em vez de cair em inglês, e a tradução `en-US` vem preenchida. `pickOverview` segue a ordem: pt-BR, inglês, idioma original e a primeira tradução não vazia. Devolve também o idioma de origem, para a tela avisar que a sinopse não está em português, e `null` quando não há texto nenhum. A alternativa era uma segunda chamada com `language=en-US` quando o texto viesse vazio, que dobra as requisições nesses casos.
+
+**Trailer escolhido no servidor.** `pickTrailer` aceita só `site=YouTube` e `type=Trailer` (Teaser, clipes e Vimeo ficam de fora) e ordena por oficial, depois idioma (`pt` antes de `en`) e depois pela data de publicação mais recente. O detalhe pede `include_video_language=pt-BR,pt,en,null`, que não aparece na referência oficial mas tem efeito, como a sonda mostrou: no filme 603, sem o parâmetro vêm só os 2 vídeos pt-BR; com ele vêm os mesmos 2 e mais 29 en-US. O `pt-BR` precisa estar escrito na lista: o valor `pt` sozinho casa só com os vídeos de Portugal (pt-PT), e com `pt,en,null` os brasileiros somem da resposta. Brasil e Portugal chegam com o mesmo `iso_639_1` (`pt`), então a ordenação não distingue um do outro. No 603 os dois trailers pt-BR não são oficiais e quem ganha é o oficial em inglês mais recente; um trailer oficial em português passaria à frente dele. Sem trailer o componente omite a seção, e Teaser não entra como substituto porque o enunciado pede o trailer.
+
+**Imagens por `next/image` com tamanhos fixos.** `posterUrl()` e `profileUrl()` montam `image.tmdb.org/t/p/<tamanho><caminho>` com `w342` no card, `w500` no detalhe e `w185` no elenco, e devolvem `null` quando o filme não tem imagem, caso em que a UI mostra um placeholder. O domínio está liberado em `images.remotePatterns` só para `/t/p/**`. A alternativa era `<img>` puro, sem `sizes`, lazy loading e formatos modernos.
+
+**Sem validação do JSON em runtime.** Os tipos da API seguem a referência oficial e foram conferidos contra a resposta real pela sonda; não há zod nem type guard. Se o TMDB mudar um campo, o sintoma é um valor ausente na tela, não um erro classificado.
+
 ## Melhorias futuras
 
-A definir ao final da implementação.
+- Type guard mínimo nas respostas do TMDB, para que uma mudança de formato vire `TmdbError` em vez de campo vazio na tela.
+
+Demais itens a definir ao final da implementação.

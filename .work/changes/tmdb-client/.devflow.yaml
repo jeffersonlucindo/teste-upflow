@@ -4,9 +4,45 @@ workItems:
   provider: none
   parents: [L1]
   tasks: []
-phase: propose
+phase: commit
 artifacts:
   proposal: done
   design: done
   tasks: done
   specs: done
+implementation:
+  status: completed
+  completed_tasks: 22
+  total_tasks: 22
+  current_task: ""
+  validated: true
+  validation:
+    status: passed
+    last_run: 2026-10-07T12:48:47Z
+    failures: []
+  updated_at: 2026-10-07T12:48:47Z
+qa:
+  iterations: 2
+  findings_resolved: 8
+  findings_open:
+    - dimension: code_review
+      severity: low
+      file: README.md
+      desc: "Linha já existente em develop cita .work (@source not \"../../.work\"); fora do diff deste change"
+    - dimension: code_review
+      severity: low
+      file: README.md
+      desc: "Diff da árvore mistura trechos de Playwright/E2E do ferramental; ficam fora dos commits deste change"
+  functional: pass
+  e2e: not-applicable        # o change não toca src/app/** nem src/components/**
+  layout: not-applicable     # idem; o change não tem tela
+  status: advisory-only
+  updated_at: 2026-10-07T12:58:01Z
+evidence:
+  parents: [L1]
+  tasks: [L1-1, L1-2, L1-3, L1-4, L1-5, L1-6, L1-7]
+  published: false
+commits:
+  count: 5
+  refs: []
+  updated_at: 2026-10-07T13:06:35Z
