@@ -9,128 +9,128 @@
 
 ## 1. Inspeção da base
 <!-- [{{ref_token}}] é o ref token do tracker (ex.: #123, PROJ-123, ou vazio quando tracker=none). Resolvido por tracker.ref_token. -->
-- [ ] 1.1 Inspecionar o que os dois changes anteriores deixaram e os docs do Next usados [#L2]
+- [x] 1.1 Inspecionar o que os dois changes anteriores deixaram e os docs do Next usados [#L2]
   - Inspecionar: `src/app/page.tsx` (esqueleto a reescrever: `metadata.title`, `section.flex.flex-col.gap-6`, classes do `h1`), `src/app/layout.tsx` (container do `main`), `src/components/ui/Button.tsx` (`Button`, `ButtonLink`, `buttonClassName("primary" | "outline")`; `ButtonLink` aceita `rel` e `aria-disabled`), `src/components/layout/NavLink.tsx` e `NavLink.test.tsx` (molde de `"use client"` e de `vi.mock("next/navigation")`), `src/app/globals.css` (tokens; `:focus-visible`; `::placeholder`), `next.config.ts` (`images.remotePatterns` com `image.tmdb.org`), `vitest.config.mts` (`environment: "jsdom"`, `include: src/**/*.test.{ts,tsx}`), `src/lib/tmdb/types.ts` (`ListingQuery`, `ListingResult`, `MovieSummary`, `Genre`, `ListingSort`), `src/lib/tmdb/params.ts` (`LISTING_SORTS`, `DEFAULT_SORT`, `clampPage`, `MAX_PAGE`; sem `server-only`), `src/lib/tmdb/images.ts` (`posterUrl`, `POSTER_SIZE.card`), `src/lib/tmdb/client.ts` (`getGenres`, `fetchListing`: assinaturas e comportamento com `page > totalPages`); docs instalados: `find node_modules/next/dist/docs -name "connection.md" -o -name "use-search-params.md" -o -name "use-router.md" -o -name "error.md" -o -name "image.md" -o -name "link.md"` (ler `connection`, o aviso de Suspense de `useSearchParams`, `reset` + `router.refresh()` em `error.md`, `fill`/`sizes` em `image.md`)
   - Criar/Alterar: nada; anotar divergências entre o `design.md` e o que está instalado (nomes exportados, tipo de `PageProps<"/">["searchParams"]`) para corrigir nas tasks seguintes
   - Critério: `ls src/lib/` lista só `tmdb/`; `ls src/components/` lista `layout/` e `ui/`; `grep -rn "server-only" src/` lista só `src/lib/tmdb/client.ts`; `npm run check` verde antes de começar
 
 ## 2. URL como única fonte (`src/lib/listing/`)
-- [ ] 2.1 `src/lib/listing/params.ts` [#L2]
+- [x] 2.1 `src/lib/listing/params.ts` [#L2]
   - Inspecionar: `design.md` decisão 2; `src/lib/tmdb/params.ts` (`clampPage`, `LISTING_SORTS`, `DEFAULT_SORT`); `src/lib/tmdb/types.ts` (`ListingQuery`); `.work/design/decisoes.md` D24, D17, D14
   - Criar/Alterar: `src/lib/listing/params.ts` com `ListingSearchParams`, `DEFAULT_LISTING_QUERY`, `parseListingParams(input)`, `buildListingSearch(query)`, `buildListingHref(query)` exatamente como no design (chaves `q`, `genre`, `sort`, `page`; primeira ocorrência; `trim`; `parseInt`; `clampPage`; D14 nos dois sentidos; ordem fixa das chaves; defaults omitidos)
   - Critério: `npm run typecheck` verde; o arquivo não importa `server-only` nem `next/*`; `buildListingHref(DEFAULT_LISTING_QUERY) === "/"`
-- [ ] 2.2 `src/lib/listing/params.test.ts` [#L2]
+- [x] 2.2 `src/lib/listing/params.test.ts` [#L2]
   - Inspecionar: `src/lib/tmdb/params.test.ts` (estilo: `describe`/`it`/`expect` importados do Vitest, uma asserção por regra); `design.md` decisão 16 (lista de casos)
   - Criar/Alterar: `params.test.ts` cobrindo defaults (objeto vazio e `new URLSearchParams("")`), cada chave válida, inválidos (`genre=abc`, `genre=0`, `genre=-1`, `sort=foo`, `page=abc`, `page=0`, `page=501`, `page=2.7`), array do Next (`{ page: ["3", "4"] }` → 3), D14 (`q=m&genre=28&sort=rating` → `genreId: null`, `sort: "popularity"`), `q` só espaços → `null`, `buildListingHref` omitindo defaults e respeitando a ordem, `q` com espaço → `q=the+matrix`, `genre`/`sort` omitidos com `q`, `page: 700` → `page=500`, round-trip `parseListingParams(new URLSearchParams(buildListingSearch(x)))` igual a `parseListingParams(x)` para três `x`
   - Critério: `npx vitest run src/lib/listing` verde
 
 ## 3. Formatadores (`src/lib/format/`)
-- [ ] 3.1 `src/lib/format/rating.ts` + `rating.test.ts` [#L2]
+- [x] 3.1 `src/lib/format/rating.ts` + `rating.test.ts` [#L2]
   - Inspecionar: `design.md` decisão 3; `.work/design/components.md` linhas `MovieCard` ("Nota 7,2", "Sem nota") e `RatingChip` (mesmos textos no detalhe); `.work/design/screens/Main.dc.html` (meta "Nota [0,0] · [Ano]")
   - Criar/Alterar: `rating.ts` com `Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })` em constante de módulo, `formatVoteAverage(value)` e `formatRating(voteAverage, voteCount)`; `rating.test.ts`: `7.2` → "7,2", `8` → "8,0", `7.26` → "7,3", `formatRating(7.2, 10)` → "Nota 7,2", `formatRating(0, 0)` → "Sem nota", `formatRating(9.5, 0)` → "Sem nota"
   - Critério: `npx vitest run src/lib/format/rating` verde; nenhum `Date` no arquivo
-- [ ] 3.2 `src/lib/format/releaseYear.ts` + `releaseYear.test.ts` [#L2]
+- [x] 3.2 `src/lib/format/releaseYear.ts` + `releaseYear.test.ts` [#L2]
   - Inspecionar: `design.md` decisão 3; `src/lib/tmdb/types.ts` (`releaseDate: string | null`, formato `YYYY-MM-DD`)
   - Criar/Alterar: `releaseYear.ts` com `releaseYear(releaseDate)` por regex `/^\d{4}/` (sem `Date`); `releaseYear.test.ts`: `"1999-03-30"` → 1999, `"2024"` → 2024, `""` → `null`, `null` → `null`, `undefined` → `null`, `"abc"` → `null`
   - Critério: `npx vitest run src/lib/format` verde (dois arquivos); `grep -n "new Date" src/lib/format/` vazio
 
 ## 4. UI compartilhada
-- [ ] 4.1 `src/components/ui/EmptyState.tsx` + `EmptyState.test.tsx` [#L2]
+- [x] 4.1 `src/components/ui/EmptyState.tsx` + `EmptyState.test.tsx` [#L2]
   - Inspecionar: `design.md` decisão 12; `.work/design/screens/Favoritos.dc.html` bloco `sc-if noFavs` (caixa, ícone 32 px, título 16 px/600, descrição, botão primário); `.work/design/components.md` linha `EmptyState`; `src/components/ui/Button.tsx` (`Button`, `ButtonLink`)
   - Criar/Alterar: `EmptyState.tsx` (shared, sem diretiva) com `EmptyStateIcon` (`"search" | "heart" | "alert" | "film"`), `EmptyStateAction`, `EmptyStateProps`, mapa interno de `<path>` por ícone (coração com o `d` do protótipo; lupa; círculo com "!"; retângulo de filme), SVG 32 px `stroke="currentColor"` `strokeWidth={1.75}` `aria-hidden`, classes `flex flex-col items-center gap-4 rounded-xl border border-border-subtle bg-surface-100 px-6 py-16 text-center`, título `<p className="text-base font-semibold text-text-primary">`, descrição `text-text-muted`, ação por `href` (`ButtonLink primary`) ou `onClick` (`Button primary`); `EmptyState.test.tsx`: ação `href` vira `link` com o `href`; ação `onClick` vira `button` e dispara; sem ação não há botão nem link
   - Critério: `npx vitest run src/components/ui/EmptyState` verde; `npm run tokens:check` verde (sem `#hex` nos SVGs: só `currentColor`/`none`)
-- [ ] 4.2 `src/components/movies/MovieCard.tsx` + `MovieCard.test.tsx` [#L2]
+- [x] 4.2 `src/components/movies/MovieCard.tsx` + `MovieCard.test.tsx` [#L2]
   - Inspecionar: `design.md` decisão 9; `.work/design/components.md` linha `MovieCard` e linha `FavoriteButton` (`icon`: `absolute top-2.5 right-2.5 w-10 h-10`, irmão do `<Link>`); `.work/design/screens/Main.dc.html` (article: pôster 2/3 raio 12 px `surface-200`, botão de coração a 10 px do canto, título 15 px/600, meta 13 px); `src/lib/tmdb/images.ts`; `src/lib/format/*`; docs `image.md` (`fill`, `sizes`)
-  - Criar/Alterar: `MovieCard.tsx` (shared) com `MovieCardData`, `MovieCardProps`, `toMovieCardData(movie: MovieSummary)` (`posterUrl(movie.posterPath, POSTER_SIZE.card)`, `releaseYear(movie.releaseDate)`) e `MovieCard({ movie, from })` com a marcação do design: `article`, pôster com `<Link aria-label="Ver detalhes de {title}">` + `next/image` (`fill`, `sizes="(max-width: 639px) 50vw, 220px"`, `alt=""`, `object-cover`) ou placeholder "Pôster" `text-text-subtle aria-hidden`, comentário marcando a posição do `FavoriteButton` como irmão do `<Link>`, título `<Link>` `text-[15px] font-semibold text-text-primary hover:text-accent`, meta `formatRating` + ` · ` + ano quando houver; `href` = `/movie/{id}` ou `/movie/{id}?from={encodeURIComponent(from)}`; `MovieCard.test.tsx`: meta "Nota 7,2 · 1999", "Nota 7,2", "Sem nota · 2024", "Sem nota"; placeholder sem `posterUrl`; links com `href` `/movie/603` e `/movie/603?from=q%3Dmatrix%26page%3D2`; `toMovieCardData` com `posterPath: null`/`releaseDate: null`; `vi.mock("next/image")` devolvendo `<img>` se o jsdom reclamar
+  - Criar/Alterar: `MovieCard.tsx` (shared) com `MovieCardData`, `MovieCardProps`, `toMovieCardData(movie: MovieSummary)` (copia `posterPath` e `releaseDate`; `posterUrl(movie.posterPath, POSTER_SIZE.card)`; `releaseYear(movie.releaseDate)`; oito campos no total, ver `design.md` decisão 9) e `MovieCard({ movie, from })` com a marcação do design: `article`, pôster com `<Link aria-label="Ver detalhes de {title}">` + `next/image` (`fill`, `sizes="(max-width: 639px) 50vw, 220px"`, `alt=""`, `object-cover`) ou placeholder "Pôster" `text-text-subtle aria-hidden`, comentário marcando a posição do `FavoriteButton` como irmão do `<Link>`, título `<Link>` `text-[15px] font-semibold text-text-primary hover:text-accent`, meta `formatRating` + ` · ` + ano quando houver; `href` = `/movie/{id}` ou `/movie/{id}?from={encodeURIComponent(from)}`; `MovieCard.test.tsx`: meta "Nota 7,2 · 1999", "Nota 7,2", "Sem nota · 2024", "Sem nota"; placeholder sem `posterUrl`; links com `href` `/movie/603` e `/movie/603?from=q%3Dmatrix%26page%3D2`; `toMovieCardData` devolve os oito campos (copia `posterPath`/`releaseDate`, inclusive `null`, e deriva `posterUrl`/`releaseYear`); `vi.mock("next/image")` devolvendo `<img>` se o jsdom reclamar
   - Critério: `npx vitest run src/components/movies/MovieCard` verde; o arquivo não importa `@/lib/tmdb/client`; `grep -n "use client" src/components/movies/MovieCard.tsx` vazio
-- [ ] 4.3 `src/components/movies/MovieGrid.tsx` e `MovieGridSkeleton.tsx` [#L2]
+- [x] 4.3 `src/components/movies/MovieGrid.tsx` e `MovieGridSkeleton.tsx` [#L2]
   - Inspecionar: `design.md` decisão 10; `.work/design/components.md` linhas `MovieGrid`, `MovieGridSkeleton` e "Estados que o protótipo não desenha" (loading, mobile 390 px); `.work/design/decisoes.md` D35, D37
   - Criar/Alterar: `MovieGrid.tsx` (shared) com `movieGridClassName` (`grid grid-cols-2 gap-x-5 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]`), `MovieGridProps`, `MovieGrid` como `<ul role="list">` com `<li key={movie.id}>` por card propagando `from`; `MovieGridSkeleton.tsx` (shared) com `count = 8`, `role="status"`, `sr-only` "Carregando filmes", itens `aria-hidden` com bloco `aspect-[2/3] rounded-xl bg-surface-200 animate-pulse` e duas linhas `h-4 rounded bg-surface-100` (segunda `w-2/3`)
   - Critério: `npm run typecheck` verde; `npm run tokens:check` verde; renderizar `<MovieGridSkeleton />` num teste rápido (ou no browser na task 8.5) mostra 8 cards
 
 ## 5. FilterBar e FilterBarLoader
-- [ ] 5.1 `src/components/movies/FilterBar.tsx`: estrutura, fallback e campo de busca com debounce [#L3]
+- [x] 5.1 `src/components/movies/FilterBar.tsx`: estrutura, fallback e campo de busca com debounce [#L3]
   - Inspecionar: `design.md` decisões 5 e 6; `.work/design/components.md` linha `FilterBar`; `.work/design/screens/Main.dc.html` (`form role="search"`, label 13 px/600 `text-muted`, input 44 px `surface-100` borda `border-subtle` raio 8 px, placeholder "Digite o nome de um filme"); `src/components/layout/NavLink.tsx` (estilo de ilha client); `.work/design/decisoes.md` D25, D26, D27; `src/lib/listing/params.ts`
   - Criar/Alterar: `FilterBar.tsx` com `"use client"`, `SEARCH_DEBOUNCE_MS = 350`, `FilterBarProps`, `FilterBar` (escolhe `FilterBarFields` quando `disabled`, `LiveFilterBar` caso contrário; nenhum hook condicional), `FilterBarFields` (sem hooks: `form role="search" action="/" method="get"`, três `label` envolvendo `input`/`select`, `name="q"`/`"genre"`/`"sort"`, classes do design, chevron SVG `currentColor`, select de gênero com a única opção "Carregando gêneros…" quando `disabled`), `LiveFilterBar` com `parseListingParams(useSearchParams())`, `useRouter`, `useListingTransition` (task 6.1; até lá, `useTransition` local), `useId`, input não controlado (`defaultValue`, `ref`), debounce por `setTimeout` em `useRef`, `commitQuery` com `committedRef` e `startTransition(() => router.replace(href, { scroll: false }))`, `onSubmit` com `preventDefault` + commit imediato, efeito de sincronização escrevendo `inputRef.current.value` quando a URL muda por fora, cleanup do timer
   - Critério: `npm run lint` verde (inclusive `react-hooks/refs` e `react-hooks/set-state-in-effect`); `npm run typecheck` verde; `grep -n "useSearchParams" src/components/movies/FilterBar.tsx` só aponta o import e a chamada dentro de `LiveFilterBar` (nenhuma em `FilterBarFields`)
-- [ ] 5.2 `FilterBar`: select "Gênero" [#L4]
+- [x] 5.2 `FilterBar`: select "Gênero" [#L4]
   - Inspecionar: `design.md` decisão 6 (select de gênero); `src/lib/tmdb/types.ts` (`Genre`); `.work/design/screens/Main.dc.html` (select 44 px, padding direito 40 px para o chevron, opção padrão "Todos")
   - Criar/Alterar: em `LiveFilterBar`, `<select name="genre" value={current.genreId ?? ""}>` com `<option value="">Todos</option>` + `genres.map`, `onChange` → `startTransition(() => router.push(buildListingHref({ ...current, genreId: value ? Number(value) : null, page: 1 })))`; `appearance-none pr-10`; chevron absoluto `text-text-muted pointer-events-none`
   - Critério: trocar o gênero num teste chama `push("/?genre=28")` (asserção entra na task 5.4); com `genres={[]}` e sem `disabled`, o select mostra só "Todos"
-- [ ] 5.3 `FilterBar`: select "Ordenar por" e modo busca (D14) [#L5]
+- [x] 5.3 `FilterBar`: select "Ordenar por" e modo busca (D14) [#L5]
   - Inspecionar: `design.md` decisão 6 (ordenação e modo busca); `src/lib/tmdb/params.ts` (`LISTING_SORTS` na ordem `popularity`, `rating`, `release`); `.work/design/decisoes.md` D14 (hint); `.work/design/screens/Main.dc.html` (opções "Popularidade", "Nota", "Data de lançamento")
   - Criar/Alterar: `SORT_LABELS: Record<ListingSort, string>` no próprio arquivo; `<select name="sort" value={current.sort}>` com opções de `LISTING_SORTS`; `onChange` → `push` com `sort` e `page: 1`; `searchMode = current.query !== null` desabilita os dois selects, adiciona `aria-describedby={hintId}` e renderiza `<p id={hintId} className="basis-full text-[13px] text-text-muted">Gênero e ordenação não se aplicam à busca por título (limitação da API).</p>`
   - Critério: as três opções aparecem na ordem do design; com URL `q=matrix` os selects têm `disabled` e o hint está no DOM (asserção na task 5.4)
-- [ ] 5.4 `src/components/movies/FilterBar.test.tsx` [#L3]
+- [x] 5.4 `src/components/movies/FilterBar.test.tsx` [#L3]
   - Inspecionar: `src/components/layout/NavLink.test.tsx` (`vi.mock("next/navigation", …)`); `design.md` decisão 16; docs do Vitest sobre `vi.useFakeTimers()` e `userEvent.setup({ advanceTimers: vi.advanceTimersByTime })` (ou `fireEvent.change`)
   - Criar/Alterar: `FilterBar.test.tsx` com `useRouter` → `{ push, replace }` (`vi.fn()`), `useSearchParams` → `new URLSearchParams(<por caso>)`, timers falsos; casos: digitar "mat" não chama `replace` antes de 350 ms e chama uma vez com `("/?q=mat", { scroll: false })` depois; com URL `q=matrix`, apagar tudo → `replace("/", { scroll: false })`; Enter chama na hora; digitar o mesmo texto da URL não chama; gênero `28` → `push("/?genre=28")`; ordenação `rating` → `push("/?sort=rating")`; URL `q=matrix` → selects `disabled`, hint visível, `aria-describedby` apontando para ele; `<FilterBar genres={[]} disabled />` com `useSearchParams` mockado para lançar → renderiza três controles desabilitados e "Carregando gêneros…" sem lançar
   - Critério: `npx vitest run src/components/movies/FilterBar` verde; `npm run test` continua terminando sem timers pendentes (`vi.useRealTimers()` no `afterEach`)
-- [ ] 5.5 `src/components/movies/FilterBarLoader.tsx` [#L4]
+- [x] 5.5 `src/components/movies/FilterBarLoader.tsx` [#L4]
   - Inspecionar: `design.md` decisão 5; docs `connection.md`; `src/lib/tmdb/client.ts` (`getGenres`); `.work/design/decisoes.md` D22
   - Criar/Alterar: `FilterBarLoader.tsx` (RSC async, sem diretiva): `await connection()`, `const genres = await getGenres()`, `return <FilterBar genres={genres} />`
   - Critério: `npm run typecheck` verde; `grep -n "connection" src/components/movies/FilterBarLoader.tsx` mostra o `await` antes de `getGenres`; o arquivo é o único de `src/components/` (além de `MovieResults.tsx`) que importa `@/lib/tmdb/client`
 
 ## 6. Transição, paginação e resultados
-- [ ] 6.1 `src/components/movies/ListingTransition.tsx` [#L2]
+- [x] 6.1 `src/components/movies/ListingTransition.tsx` [#L2]
   - Inspecionar: `design.md` decisão 7; `.work/design/decisoes.md` D26; `.work/config.yaml > context` pilar 1 (registro de `"use client"` fora das ilhas nomeadas: feito no design)
   - Criar/Alterar: `ListingTransition.tsx` com `"use client"`, `createContext` de `{ isPending, startTransition } | null`, `ListingTransition` (provider com `useTransition()`), `ListingTransitionRegion` (`<div aria-busy={isPending} className={…"flex flex-col gap-6 transition-opacity" + (isPending ? " opacity-60" : "")}>` + `<p role="status" className="sr-only">` com "Atualizando resultados…" quando pendente), `useListingTransition()` que devolve o contexto ou um `useTransition()` local; trocar o `useTransition` local do `FilterBar` (task 5.1) por `useListingTransition()`
   - Critério: `npm run lint` e `npm run typecheck` verdes; `FilterBar.test.tsx` continua verde sem provider
-- [ ] 6.2 `src/components/movies/Pagination.tsx` + `Pagination.test.tsx` [#L2]
+- [x] 6.2 `src/components/movies/Pagination.tsx` + `Pagination.test.tsx` [#L2]
   - Inspecionar: `design.md` decisão 11; `.work/design/components.md` linha `Pagination`; `.work/design/screens/Main.dc.html` (nav centralizada, Anterior outline, "Página 1 de [N]" `text-muted`, Próxima primária); `src/components/ui/Button.tsx` (`ButtonLink`, `buttonClassName`); `.work/design/decisoes.md` D28
   - Criar/Alterar: `Pagination.tsx` (RSC) com `PaginationProps` (`page`, `totalPages`, `hrefFor`) e a marcação do design (`nav aria-label="Paginação"`, `ButtonLink` com `rel="prev"`/`"next"`, `span aria-disabled="true"` com `buttonClassName` + `cursor-not-allowed opacity-50` nos limites); `Pagination.test.tsx`: 1 de 5 → "Anterior" sem `link` e com `aria-disabled`, "Próxima" link `href` igual a `hrefFor(2)`; 5 de 5 → inverso; 1 de 1 → nenhum link; texto "Página 3 de 5" quando `page=3`
   - Critério: `npx vitest run src/components/movies/Pagination` verde; `grep -n "use client" src/components/movies/Pagination.tsx` vazio
-- [ ] 6.3 `src/components/movies/MovieResults.tsx` [#L2]
+- [x] 6.3 `src/components/movies/MovieResults.tsx` [#L2]
   - Inspecionar: `design.md` decisão 8; `src/lib/tmdb/client.ts` (`fetchListing`, comportamento com `page > totalPages`); `src/lib/tmdb/types.ts` (`ListingResult`); `.work/design/components.md` linha `MovieResults` e "Busca sem resultado"; `.work/design/decisoes.md` D17, D36, D39; tipo global `PageProps<"/">` após `npx next typegen`
   - Criar/Alterar: `MovieResults.tsx` (RSC async) com `MovieResultsProps { searchParams: PageProps<"/">["searchParams"] }`, `parseListingParams(await searchParams)`, `fetchListing(params)`, os três ramos do design (página fora do intervalo → `EmptyState` "Esta página não existe" com "Ir para a última página"; vazio → "Nenhum filme encontrado para “{q}”" + "Limpar busca" ou "Nenhum filme encontrado" + "Limpar filtros"; resultados → contagem em modo busca, `MovieGrid` com `movies.map(toMovieCardData)` e `from={buildListingSearch(params) || undefined}`, `Pagination` com `hrefFor={(page) => buildListingHref({ ...params, page })}`)
-  - Critério: `npm run typecheck` verde; o arquivo não tem `"use client"`, não chama `connection()` (a dinamicidade vem do `await searchParams`) e não lê `Date`
+  - Critério: `npm run typecheck` verde; o arquivo não tem `"use client"`, faz `await connection()` depois do `await searchParams` e antes de `fetchListing` (ajuste do apply: ver `design.md` › Ajustes do apply, item 1) e não lê `Date` diretamente
 
 ## 7. Rotas
-- [ ] 7.1 `src/app/page.tsx` com `h1` e os dois `<Suspense>` [#L2]
+- [x] 7.1 `src/app/page.tsx` com `h1` e os dois `<Suspense>` [#L2]
   - Inspecionar: `src/app/page.tsx` atual (do `setup-catalogo`: `metadata`, `section`, `h1`); `design.md` decisão 4; `.work/design/components.md` tabela "Páginas e arquivos de rota" (`page.tsx`: h1 + dois Suspense); `.work/design/decisoes.md` D27, D37
-  - Criar/Alterar: reescrever `page.tsx` exatamente como a decisão 4: `metadata` mantido, `HomePage({ searchParams }: PageProps<"/">)` **sem** `await`, `ListingTransition` envolvendo `<Suspense fallback={<FilterBar genres={[]} disabled />}><FilterBarLoader /></Suspense>` e `<ListingTransitionRegion><Suspense fallback={<MovieGridSkeleton />}><MovieResults searchParams={searchParams} /></Suspense></ListingTransitionRegion>`; remover o parágrafo-placeholder
+  - Criar/Alterar: reescrever `page.tsx` exatamente como a decisão 4: `metadata` com `title.absolute` mantido como no scaffold ("Filmes populares · Catálogo."), `HomePage({ searchParams }: PageProps<"/">)` **sem** `await`, `ListingTransition` envolvendo `<Suspense fallback={<FilterBar genres={[]} disabled />}><FilterBarLoader /></Suspense>` e `<ListingTransitionRegion><Suspense fallback={<MovieGridSkeleton />}><MovieResults searchParams={searchParams} /></Suspense></ListingTransitionRegion>`; remover o parágrafo-placeholder
   - Critério: `npm run typecheck` verde; `grep -n "await" src/app/page.tsx` vazio; `npm run build` sem `.env.local` verde e `/` listada como `ƒ` (dinâmica) no resumo
-- [ ] 7.2 `src/components/ui/ErrorState.tsx` + `src/app/error.tsx` [#L2]
+- [x] 7.2 `src/components/ui/ErrorState.tsx` + `src/app/error.tsx` [#L2]
   - Inspecionar: `design.md` decisão 13; docs `error.md` (props `error`/`reset`, recuperação com `router.refresh()`); `.work/design/components.md` linha `ErrorState` e "Erro de API"/"Token ausente"; `.work/design/decisoes.md` D21; `src/lib/tmdb/errors.ts` (mensagem de `config`)
   - Criar/Alterar: `ErrorState.tsx` (`"use client"`) com `ErrorStateProps` (`error`, `reset`, `title?` com default "Não foi possível carregar os filmes"), `EmptyState icon="alert"`, descrição `error.message` só em `development` (senão "Tente novamente em instantes."), ação "Tentar novamente" com `startTransition(() => { router.refresh(); reset(); })`; `src/app/error.tsx` (`"use client"`, default export que renderiza `<ErrorState {...props} />`)
   - Critério: `npm run typecheck` e `npm run lint` verdes; sem `.env.local`, `npm run dev` + abrir `/` mostra o `EmptyState` de erro com a mensagem que nomeia `TMDB_API_READ_TOKEN` e o `Header` continua visível; "Tentar novamente" refaz a requisição (verificar criando `.env.local` e clicando, sem recarregar)
 
 ## 8. Verificação no browser e nos dois modos (critério do change, `.work/backlog.md` linha 3)
-- [ ] 8.1 Populares e paginação [#L2]
+- [x] 8.1 Populares e paginação [#L2]
   - Inspecionar: `.env.local` com token válido; `npm run dev`; `screens/pdf/listagem.png`
   - Criar/Alterar: nada; abrir `/`, `/?page=2`, `/?page=500`, `/?page=501`, `/?page=abc`
   - Critério: `/` mostra 20 cards com pôster `w342` (devtools: `image.tmdb.org/t/p/w342/…` via `/_next/image`), meta "Nota X,X · AAAA", "Anterior" desabilitado e "Próxima" link; `/?page=2` mostra "Página 2 de N" com os dois links; `/?page=501` e `/?page=abc` renderizam como página 500 e 1 respectivamente (parser); link de um card leva a `/movie/{id}` (404 esperado até o `detalhe-filme`) e, a partir de `/?page=2`, a `/movie/{id}?from=page%3D2`
-- [ ] 8.2 Busca por título [#L3]
+- [x] 8.2 Busca por título [#L3]
   - Inspecionar: `.work/design/decisoes.md` D14, D25, D26
   - Criar/Alterar: nada; digitar "matrix", observar a URL e o grid; digitar "zzzzqqqq"; apagar; usar voltar/avançar; abrir `/?q=matrix&page=2` direto
   - Critério: a URL vira `/?q=matrix` só depois de parar de digitar (uma entrada de histórico, `replace`); durante a troca o grid antigo fica com opacidade reduzida e `aria-busy="true"` (devtools) e o skeleton **não** aparece; gênero e ordenação ficam desabilitados com o hint; "zzzzqqqq" mostra "Nenhum filme encontrado para “zzzzqqqq”" com "Limpar busca" levando a `/`; apagar tudo volta a `/` com os selects habilitados; voltar/avançar sincronizam o campo; a linha "N resultados para “matrix”" aparece
-- [ ] 8.3 Filtro por gênero [#L4]
+- [x] 8.3 Filtro por gênero [#L4]
   - Inspecionar: `src/lib/tmdb/client.ts` (`getGenres`); `.work/design/decisoes.md` D22
   - Criar/Alterar: nada; escolher "Ação", depois "Todos"; abrir `/?genre=28&page=3`; abrir `/?genre=999999`
   - Critério: o select lista os gêneros em pt-BR (de `getGenres`); escolher cria `/?genre=28` com `push` (voltar retorna a `/`) e zera a página; `/?genre=28&page=3` abre na página 3 com "Ação" selecionado; `/?genre=999999` mostra "Nenhum filme encontrado" com "Limpar filtros"; no primeiro carregamento o select aparece desabilitado com "Carregando gêneros…" por um instante (ou throttle de rede no devtools para ver)
-- [ ] 8.4 Ordenação [#L5]
+- [x] 8.4 Ordenação [#L5]
   - Inspecionar: `.work/design/decisoes.md` D13, D15, D16; `src/lib/tmdb/params.ts` (`SORT_BY`, `RATING_MIN_VOTE_COUNT`)
   - Criar/Alterar: nada; alternar "Popularidade", "Nota", "Data de lançamento"; combinar com gênero; abrir `/?sort=release&genre=28`
   - Critério: "Nota" cria `/?sort=rating` e o topo não tem filme com poucos votos (corte de 200); "Data de lançamento" cria `/?sort=release` e o primeiro card não tem ano futuro; "Popularidade" volta a `/` (default omitido); a combinação mantém os dois parâmetros e zera a página; em modo busca o select está desabilitado
-- [ ] 8.5 Estados: carregando, vazio, erro, token ausente [#L2]
+- [x] 8.5 Estados: carregando, vazio, erro, token ausente [#L2]
   - Inspecionar: `.work/design/components.md` "Estados que o protótipo não desenha"; `design.md` decisões 8, 12, 13
   - Criar/Alterar: nada; com throttle "Slow 3G" abrir `/` (skeleton de 8 cards com `role="status"`); renomear `.env.local` e abrir `/` (erro com mensagem nomeando a variável em dev); com token inválido (`TMDB_API_READ_TOKEN=x`) abrir `/` (erro genérico "Não foi possível carregar os filmes" + "Tentar novamente"); restaurar
   - Critério: cada estado usa o `EmptyState` com a ação certa; o `Header` continua visível no erro; "Tentar novamente" após restaurar o token recupera sem reload completo
-- [ ] 8.6 390 px e 1280 px, teclado [#L2]
+- [x] 8.6 390 px e 1280 px, teclado [#L2]
   - Inspecionar: `.work/design/decisoes.md` D35; `.work/design/components.md` "Mobile 390 px" e "Acessibilidade"; `screens/pdf/listagem.png`
   - Criar/Alterar: nada; devtools em 390 × 844 e 1280 × 800; navegar só por Tab/Enter
   - Critério: a 390 px o grid tem 2 colunas sem overflow horizontal, o `form` quebra linha (busca em linha própria, selects lado a lado), a paginação quebra linha e todos os controles têm 44 px; a 1280 px a tela bate com o PNG em estrutura (cinco colunas de cards, paginação centralizada); por teclado: campo → selects → links dos cards → paginação, com anel de foco âmbar; Enter no campo aplica a busca na hora
-- [ ] 8.7 Build e `next dev` com `CATALOGO_CACHE_COMPONENTS=1` (D42) [#L2]
+- [x] 8.7 Build e `next dev` com `CATALOGO_CACHE_COMPONENTS=1` (D42) [#L2]
   - Inspecionar: `.work/changes/setup-catalogo/tasks.md` task 5.2 (como ligar a flag em bash e PowerShell); `design.md` decisão 17
   - Criar/Alterar: nada; `CATALOGO_CACHE_COMPONENTS=1 npm run build` **sem** `.env.local` (PowerShell: `$env:CATALOGO_CACHE_COMPONENTS="1"; npm run build`); depois `CATALOGO_CACHE_COMPONENTS=1 npm run dev` com `.env.local` e abrir `/`, `/?q=matrix`, `/?page=2`, `/?genre=28&sort=rating`
   - Critério: build verde sem token e sem rede, `/` listada como `◐` (shell estático com buracos) e `/favoritos` como `○`; nenhuma requisição a `api.themoviedb.org` durante o build; `next dev` sem insight/erro de blocking-route, de `useSearchParams` sem Suspense ou de IO síncrono no console e no overlay; o shell (h1, barra desabilitada, skeleton) aparece primeiro e os dois buracos chegam em seguida; voltar `npm run build` sem a flag: verde
 
 ## 9. Registro
-- [ ] 9.1 `components.md` e `backlog.md` [#L2]
+- [x] 9.1 `components.md` e `backlog.md` [#L2]
   - Inspecionar: `.work/design/components.md` (cabeçalho: "mudanças de contrato atualizam este arquivo"); `design.md` decisão 18; `.work/backlog.md` (coluna `state` de L2–L5)
-  - Criar/Alterar: em `components.md`, acrescentar a linha `ListingTransition` (client, `components/movies/`, props `children`, estados pendente/idle), mover `ErrorState` para pasta `components/ui/` com `title?`, registrar `icon: EmptyStateIcon` no `EmptyState`, `toMovieCardData` e `movieGridClassName` nas linhas de `MovieCard`/`MovieGrid`, `ul role="list"` no `MovieGrid`; em `backlog.md`, marcar L2, L3, L4, L5 como `doing` (o finish marca `done`)
-  - Critério: `git diff --stat .work/design/components.md .work/backlog.md` mostra só esses dois arquivos em `.work/design` e `.work/`; `decisoes.md` e README intocados neste change
+  - Criar/Alterar: em `components.md`, acrescentar a linha `ListingTransition` (client, `components/movies/`, props `children`, estados pendente/idle), mover `ErrorState` para pasta `components/ui/` com `title?`, registrar `icon: EmptyStateIcon` no `EmptyState`, `toMovieCardData` e `movieGridClassName` nas linhas de `MovieCard`/`MovieGrid`, `ul role="list"` no `MovieGrid`, e na linha `MovieCard` o `MovieCardData` com os oito campos (`posterPath`/`releaseDate` de origem ao lado de `posterUrl`/`releaseYear`); em `decisoes.md`, só a redação do hint na linha D14 ("Gênero e ordenação não se aplicam à busca por título (limitação da API).", ver `design.md` decisão 6); em `backlog.md`, marcar L2, L3, L4, L5 como `doing` (o finish marca `done`)
+  - Critério: `git diff --stat .work/design/components.md .work/design/decisoes.md .work/backlog.md` mostra só esses três arquivos em `.work/`; em `decisoes.md` o diff é só a linha D14; README intocado neste change
 
 ## 10. Validação
-- [ ] 10.1 Rodar comandos de validação existentes (comandos de config.yaml > apply.validation): `npm run tokens:check`, `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build` — o build sem `.env.local` e sem rede (pilar 7)
-- [ ] 10.2 Rodar testes existentes: `npm run test` (NavLink, Button, os seis de `src/lib/tmdb/`, e os novos: `lib/listing/params`, `lib/format/rating`, `lib/format/releaseYear`, `ui/EmptyState`, `movies/MovieCard`, `movies/FilterBar`, `movies/Pagination`) e registrar a saída na evidência
-- [ ] 10.3 Conferir que a task 8.7 (build e `next dev` com a flag) foi registrada na evidência com o resumo do build; regenerar o HTML do change (`node .claude/devflow/tools/htmlgen.mjs listagem-filmes`)
+- [x] 10.1 Rodar comandos de validação existentes (comandos de config.yaml > apply.validation): `npm run tokens:check`, `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build` — o build sem `.env.local` e sem rede (pilar 7) [#L2] [#L3] [#L4] [#L5]
+- [x] 10.2 Rodar testes existentes: `npm run test` (NavLink, Button, os seis de `src/lib/tmdb/`, e os novos: `lib/listing/params`, `lib/format/rating`, `lib/format/releaseYear`, `ui/EmptyState`, `movies/MovieCard`, `movies/FilterBar`, `movies/Pagination`) e registrar a saída na evidência [#L2] [#L3] [#L4] [#L5]
+- [ ] 10.3 Conferir que a task 8.7 (build e `next dev` com a flag) foi registrada na evidência com o resumo do build; regenerar o HTML do change (`node .claude/devflow/tools/htmlgen.mjs listagem-filmes`) [#L2] [#L3] [#L4] [#L5]

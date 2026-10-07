@@ -191,7 +191,9 @@ Placement: `src/components/movies/FilterBar.tsx` (modo busca, `aria-describedby`
 O sistema DEVE renderizar cada filme como um card com pôster (`next/image` `w342`) ou placeholder,
 título, meta "Nota X,X · AAAA" com as variantes sem ano e sem votos, e link para `/movie/{id}` que
 carrega os parâmetros da listagem em `?from=` quando houver.
-Placement: `src/components/movies/MovieCard.tsx` (shared; `MovieCardData`, `toMovieCardData`),
+Placement: `src/components/movies/MovieCard.tsx` (shared; `MovieCardData` com oito campos: `posterPath` e
+`releaseDate` de origem para o snapshot de favoritos, `posterUrl` e `releaseYear` derivados, mais `id`,
+`title`, `voteAverage`, `voteCount`; `toMovieCardData`),
 `src/components/movies/MovieGrid.tsx` (shared; `ul role="list"`), `src/lib/format/rating.ts`,
 `src/lib/format/releaseYear.ts`, `src/lib/tmdb/images.ts` (`posterUrl`, `POSTER_SIZE.card`).
 
@@ -241,7 +243,7 @@ O sistema DEVE manter `src/app/page.tsx` sem leitura de `searchParams` e com tod
 `<Suspense>`, de modo que `npm run build` passe sem token e sem rede com e sem
 `CATALOGO_CACHE_COMPONENTS=1`, e `next dev` com a flag não reporte blocking-route.
 Placement: `src/app/page.tsx` (dois `<Suspense>`), `src/components/movies/FilterBarLoader.tsx`
-(`connection()`), `src/components/movies/MovieResults.tsx` (`await searchParams`),
+(`connection()`), `src/components/movies/MovieResults.tsx` (`await searchParams` e `await connection()`),
 `src/components/movies/ListingTransition.tsx` (client estático).
 
 #### Cenário: Build sem a flag
