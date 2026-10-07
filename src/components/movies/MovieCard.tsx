@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { formatRating } from "@/lib/format/rating";
 import { releaseYear } from "@/lib/format/releaseYear";
 import { POSTER_SIZE, posterUrl } from "@/lib/tmdb/images";
@@ -70,8 +71,8 @@ export function MovieCard({ movie, from }: MovieCardProps) {
             </span>
           )}
         </Link>
-        {/* Posição do FavoriteButton (variant="icon"): irmão do <Link>, nunca dentro dele,
-            absolute top-2.5 right-2.5 w-10 h-10. */}
+        {/* Irmão do <Link>, nunca dentro dele: botão dentro de link é HTML inválido. */}
+        <FavoriteButton movie={movie} variant="icon" />
       </div>
       <div className="flex flex-col gap-1">
         <Link
