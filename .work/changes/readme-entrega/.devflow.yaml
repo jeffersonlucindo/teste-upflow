@@ -4,7 +4,7 @@ workItems:
   provider: none
   parents: [L8]
   tasks: []
-phase: commit
+phase: pr
 artifacts:
   proposal: done
   design: done
@@ -34,3 +34,10 @@ commits:
   count: 2
   refs: []
   branch: feature/readme-entrega
+pr:
+  number: 6
+  url: https://github.com/jeffersonlucindo/desafio-up-flow/pull/6
+  target: develop
+  state: open
+  opened_at: 2026-10-07
+  linkedItems: [L8]
