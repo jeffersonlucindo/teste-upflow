@@ -80,7 +80,7 @@
   - Critério: arquivo versionado (`git check-ignore .env.example` sai com 1); `.env.local` ignorado
 - [x] 4.2 README esqueleto [#L8]
   - Inspecionar: `DESAFIO.md > Entrega` (README obrigatório com execução, decisões, trade-offs); `design.md` decisão 14; `.work/design/decisoes.md` (D1–D11, D33, D34, D40)
-  - Criar/Alterar: reescrever `README.md` com: título "Catálogo." e uma frase; "Como rodar" (Node 22, `npm ci`, copiar `.env.example` para `.env.local` em bash e PowerShell, token em themoviedb.org/settings/api, `npm run dev`); "Scripts" (tabela); "Flags" (`CATALOGO_CACHE_COMPONENTS`, o que liga, como testar); "Estrutura" (árvore de `src/` com os domínios previstos); "Processo" (`.work/` e `.claude/`: devflow, onde estão `decisoes.md`, `components.md`, changes); "Decisões técnicas e trade-offs" com um parágrafo por decisão deste change, citando o id D<n>; "Melhorias futuras" (vazio, preenchido no `readme-entrega`)
+  - Criar/Alterar: reescrever `README.md` com: título "Catálogo." e uma frase; "Como rodar" (Node 22, `npm ci`, copiar `.env.example` para `.env.local` em bash e PowerShell, token em themoviedb.org/settings/api, `npm run dev`); "Scripts" (tabela); "Flags" (`CATALOGO_CACHE_COMPONENTS`, o que liga, como testar); "Estrutura" (árvore de `src/` com os domínios previstos); (sem seção "Processo": o README trata só do código); "Decisões técnicas e trade-offs" com um parágrafo por decisão deste change, citando o id D<n>; "Melhorias futuras" (vazio, preenchido no `readme-entrega`)
   - Critério: seguir o README do zero num clone limpo funciona até `npm run dev`
 - [x] 4.3 `AGENTS.md` e docs da versão [#L1]
   - Inspecionar: `AGENTS.md` gerado pela CLI; bloco `nextjs-agent-rules`

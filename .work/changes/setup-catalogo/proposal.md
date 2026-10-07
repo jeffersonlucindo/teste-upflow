@@ -13,7 +13,7 @@ o primeiro teste, script `check-tokens`, toggle `CATALOGO_CACHE_COMPONENTS` no `
   variável de ambiente, .env.example. Este change entrega o scaffold, a variável de ambiente e o
   `.env.example`; o cliente TMDB em si é o change `tmdb-client`.
 - [#L8] README com instruções de execução, decisões técnicas e trade-offs. Este change entrega o
-  esqueleto (como rodar, scripts, flags, estrutura, processo) e a primeira leva de decisões;
+  esqueleto (como rodar, scripts, flags, estrutura) e a primeira leva de decisões;
   `readme-entrega` consolida.
 
 ## Tasks
@@ -78,7 +78,7 @@ funcionalidade, e prova desde o dia 1 que o build passa sem token e sem rede nos
   - [#L1] — `.env.example`
   - [#L1] — Build sem `.env.local` e build com `CATALOGO_CACHE_COMPONENTS=1`
 - [#L8] — README com instruções de execução, decisões técnicas e trade-offs
-  - [#L8] — README: título, como rodar, scripts, flags, estrutura, processo, decisões deste change
+  - [#L8] — README: título, como rodar, scripts, flags, estrutura, decisões deste change
 
 ## Impacto
 - Arquivos novos: `package.json`, `package-lock.json`, `next.config.ts`, `tsconfig.json`,

@@ -26,7 +26,7 @@ lidos no explore a partir do pacote):
 - Design System como única fonte de cores no código, verificado por script (pilar 5).
 - Shell de navegação acessível e idêntico nas três telas (Header, NavLink, container).
 - Convenções de pastas, nomes e testes materializadas para os changes seguintes copiarem (pilar 2).
-- README com o que já dá para documentar: como rodar, scripts, flags, estrutura, processo.
+- README com o que já dá para documentar: como rodar, scripts, flags, estrutura (só código, sem explicar o fluxo).
 
 ## Não-objetivos
 - Chamadas ao TMDB, tipos de domínio, mapeadores (`tmdb-client`).
@@ -141,7 +141,7 @@ lidos no explore a partir do pacote):
 14. **README esqueleto** (L8) — seções: título e uma frase; "Como rodar" (Node 22, `npm ci`,
     `.env.local` a partir de `.env.example` com instrução para bash e PowerShell, `npm run dev`);
     "Scripts" (tabela); "Flags" (`CATALOGO_CACHE_COMPONENTS`); "Estrutura" (árvore de `src/`);
-    "Processo" (`.work/` e `.claude/`: o que são, onde estão as decisões); "Decisões técnicas e
+    (a seção "Processo" foi retirada em 2026-10-07: o README trata só do código); "Decisões técnicas e
     trade-offs" com as deste change (D1 a D11 revisada, D33, D34, D40); "Melhorias futuras" vazio.
 
 ## Riscos / Trade-offs
