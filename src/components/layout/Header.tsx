@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { FavoritesBadge } from "@/components/favorites/FavoritesBadge";
+
 import { NavLink } from "./NavLink";
 
 export function Header() {
@@ -14,7 +16,10 @@ export function Header() {
         </Link>
         <div className="flex items-center gap-2">
           <NavLink href="/">Explorar</NavLink>
-          <NavLink href="/favoritos">Favoritos</NavLink>
+          <NavLink href="/favoritos">
+            Favoritos
+            <FavoritesBadge />
+          </NavLink>
         </div>
       </nav>
     </header>
