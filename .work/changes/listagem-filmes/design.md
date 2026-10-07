@@ -545,3 +545,20 @@ código segue o que está aqui; os trechos acima ficam como histórico da propos
    resolvido ("5 páginas", "1 resultado"), sem os parênteses.
 6. Aviso de desenvolvimento não tratado: o `next/image` sugere `loading="eager"` no primeiro pôster
    (LCP). `priority` no card já estava nos não-objetivos; fica como melhoria.
+
+## Ajustes do QA (2026-10-07)
+Correções dos achados do code review, todas com teste que falha sem a correção.
+1. **Selects do `FilterBar` com valor otimista** (`useOptimistic`): eram controlados só pela URL,
+   que muda apenas quando a navegação termina; em rede lenta a escolha voltava a "Todos" até a
+   resposta chegar. Agora o select mostra a escolha durante a transição e duas escolhas seguidas se
+   somam. Coberto por `e2e/listagem-filmes.spec.ts › navegação pendente` (segura o payload RSC).
+2. **Campo de busca conferido a cada URL nova**: o efeito de sincronização dependia só de `q`. Uma
+   busca enviada e superada por outra navegação sem `q` (trocar gênero, paginar) deixava o texto no
+   campo, a URL sem busca e o Enter sem efeito. O efeito agora roda a cada URL nova, depois que a
+   transição assenta (`syncedUrlRef`). Reproduzido no browser antes da correção; coberto por teste
+   de unidade e E2E.
+3. **`role="status"` fora da região `aria-busy`** em `ListingTransitionRegion`: dentro dela o
+   anúncio "Atualizando resultados…" podia ser adiado ou suprimido por leitores de tela.
+4. **Testes ao lado** de `ListingTransition` (pendente/idle, status fora da região, fallback sem
+   provider) e de `ErrorState` (título, mensagem por ambiente, `router.refresh()` + `reset()`).
+

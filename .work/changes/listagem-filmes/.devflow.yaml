@@ -4,7 +4,7 @@ workItems:
   provider: none
   parents: [L2, L3, L4, L5]
   tasks: []
-phase: apply
+phase: qa
 artifacts:
   proposal: done
   design: done
@@ -22,3 +22,17 @@ implementation:
     failures: []
     cache_components: "build com CATALOGO_CACHE_COMPONENTS=1 verde (/ parcial, /favoritos estática); next dev com a flag sem insight de blocking-route"
   updated_at: 2026-10-07T13:53:54Z
+qa:
+  iterations: 2
+  findings_resolved: 6        # 4 do code review (2 bugs do FilterBar, status fora da região busy, testes ausentes) + 2 de layout (captura sem pôsteres, corpo em 16 px)
+  findings_open:
+    - dimension: layout
+      severity: low
+      kind: suggestion
+      file: src/app/page.tsx
+      desc: "h1 em text-4xl (36 px) contra os 40 px/1.1/-0.01em do README de design; o design.md do change prescreve text-4xl, herdado do setup-catalogo"
+  functional: pass            # npm run check (180 testes) e build
+  e2e: pass                   # 38 passed, 0 skipped (desktop e mobile), duas execuções seguidas
+  layout: pass
+  status: advisory-only
+  updated_at: 2026-10-07T14:22:54Z
