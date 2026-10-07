@@ -4,9 +4,38 @@ workItems:
   provider: none
   parents: [L6]
   tasks: []
-phase: propose
+phase: commit
 artifacts:
   proposal: done
   design: done
   tasks: done
   specs: done
+implementation:
+  status: completed
+  completed_tasks: 28
+  total_tasks: 28
+  current_task: ""
+  validated: true
+  validation:
+    status: passed
+    last_run: 2026-10-07T16:50:14Z
+    failures: []
+  updated_at: 2026-10-07T16:50:14Z
+qa:
+  iterations: 2
+  findings_resolved: 3
+  findings_open:
+    - dimension: code_review
+      file: src/components/movie-detail/CastList.tsx
+      desc: "suggestion low: key por member.id duplicaria se o TMDB repetir a mesma pessoa entre os 8 primeiros (caso real nao confirmado)"
+    - dimension: layout
+      file: e2e/detalhe-filme.spec.ts
+      desc: "suggestion: o estado de erro do detalhe nao tem teste E2E versionado (o fetch e do servidor); conferido a mao com o build sem token (screenshots detalhe-erro) e coberto por ErrorState.test.tsx"
+  functional: pass
+  e2e: pass
+  e2e_counts: { desktop: 57, mobile: 57, skipped: 0 }
+  layout: pass
+  status: advisory-only
+  updated_at: 2026-10-07T17:03:50Z
+commits:
+  count: 7
