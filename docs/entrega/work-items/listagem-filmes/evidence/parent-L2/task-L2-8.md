@@ -27,7 +27,7 @@ Ajustes do apply 1 a 3 (ver `design.md` › "Ajustes do apply") e do QA (ver "Aj
 ## Resultado
 **Task 8.7 (resumo).** `CATALOGO_CACHE_COMPONENTS=1 npm run build` sem `.env.local` e sem rede: verde, com `/` listada como `◐` (shell estático com buracos) e `/favoritos` como `○` (estática). `next dev` com a flag, abrindo `/`, `/?q=matrix`, `/?page=2` e `/?genre=28&sort=rating`: sem insight de blocking-route (depois do `await connection()` em `MovieResults`), sem erro de `useSearchParams` sem Suspense e sem IO síncrono. O build sem a flag segue verde.
 
-**QA (`.work/changes/listagem-filmes/.devflow.yaml > qa`):** 2 iterações, 6 findings resolvidos, `functional: pass` (`npm run check` com 180 testes e build verdes), status `advisory-only`.
+**QA (`.work/changes/archive/2026-10-07-listagem-filmes/.devflow.yaml > qa`):** 2 iterações, 6 findings resolvidos, `functional: pass` (`npm run check` com 180 testes e build verdes), status `advisory-only`.
 - E2E: spec `e2e/listagem-filmes.spec.ts`, 38 passed e 0 skipped nos projetos desktop e mobile, em duas execuções seguidas.
 - Layout: `pass`. Gates `expectNoHorizontalOverflow`, `expectTokenColors`, `expectMinHeight`, `expectFontVariable` e `expectFocusRing` verdes. Finding em aberto (baixo, `suggestion`, `src/app/page.tsx`): o `h1` está em `text-4xl` (36 px) contra 40 px/1.1/-0.01em do README de design; o `design.md` prescreve `text-4xl`, herdado do `setup-catalogo`.
 

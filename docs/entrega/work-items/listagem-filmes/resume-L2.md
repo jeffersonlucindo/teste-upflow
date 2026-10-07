@@ -75,8 +75,8 @@ Os quatro requisitos verificáveis no browser a 390 e 1280 px, com estados de ca
 
 ## 📦 Entrega
 
-**Status:** Evidências geradas em 2026-10-07, ainda sem finish. QA `advisory-only` (2 iterações, 6 findings resolvidos, `functional: pass`, E2E 38 passed e 0 skipped, layout `pass` com um finding baixo em aberto).
-**Change:** `.work/changes/listagem-filmes/` (o arquivamento fica para o finish)
+**Status:** Entregue em 2026-10-07 (PR #3 para `develop`). QA `advisory-only` (2 iterações, 6 findings resolvidos, `functional: pass`, E2E 38 passed e 0 skipped, layout `pass` com um finding baixo em aberto).
+**Change:** `.work/changes/archive/2026-10-07-listagem-filmes/` · spec sincronizada em `.work/specs/listagem-filmes/spec.md`
 
 **Evidências:**
 ### Parent #L2 — Listagem de filmes populares com paginação

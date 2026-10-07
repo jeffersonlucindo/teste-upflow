@@ -22,7 +22,7 @@ Decisões 5 e 6 do `design.md`; D25 (debounce com `replace`, uma entrada de hist
 ## Resultado
 A URL vira `/?q=matrix` só depois de parar de digitar; "Limpar busca" e apagar o campo levam a `/`. Voltar e avançar sincronizam o campo. A busca sem resultado mostra "Nenhum filme encontrado para “…”".
 
-**QA** (`.work/changes/listagem-filmes/.devflow.yaml > qa`; status `advisory-only`, `functional: pass`):
+**QA** (`.work/changes/archive/2026-10-07-listagem-filmes/.devflow.yaml > qa`; status `advisory-only`, `functional: pass`):
 - E2E: spec `e2e/listagem-filmes.spec.ts`, 38 passed e 0 skipped nos projetos desktop e mobile.
 - Layout: gates (`expectNoHorizontalOverflow`, `expectTokenColors`, `expectMinHeight`, `expectFontVariable`, `expectFocusRing`) verdes nas duas larguras. Finding em aberto (baixo, `suggestion`, `src/app/page.tsx`): `h1` em `text-4xl` (36 px) contra 40 px/1.1/-0.01em do README de design; o `design.md` prescreve `text-4xl`, herdado do `setup-catalogo`.
 

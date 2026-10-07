@@ -21,7 +21,7 @@ Decisão 6 do `design.md` e D13, D14, D15 e D16 (cortes de votos e de data aplic
 ## Resultado
 "Nota" cria `/?sort=rating`, "Data de lançamento" cria `/?sort=release` e "Popularidade" volta a `/`. O estado é conferido nas capturas de L2-8, L3-5 e L4-5, que mostram a barra de filtros.
 
-**QA** (`.work/changes/listagem-filmes/.devflow.yaml > qa`; `advisory-only`, `functional: pass`):
+**QA** (`.work/changes/archive/2026-10-07-listagem-filmes/.devflow.yaml > qa`; `advisory-only`, `functional: pass`):
 - E2E: spec `e2e/listagem-filmes.spec.ts`, 38 passed e 0 skipped nos projetos desktop e mobile.
 - Layout: gates verdes; finding em aberto (baixo, `suggestion`, `src/app/page.tsx`): `h1` em `text-4xl` (36 px) contra 40 px/1.1/-0.01em do README de design; o `design.md` prescreve `text-4xl`.
 

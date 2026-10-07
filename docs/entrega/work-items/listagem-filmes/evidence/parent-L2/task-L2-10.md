@@ -14,8 +14,8 @@ Os cinco comandos de `apply.validation` passaram, o build sem `.env.local` e sem
 ## Arquivos impactados
 | Arquivo | Ação | Descrição |
 |---------|------|-----------|
-| `.work/changes/listagem-filmes/tasks.md` | alterado | Task 10.3 marcada `[x]` nesta fase |
-| `.work/changes/listagem-filmes/.devflow.yaml` | alterado | `completed_tasks` 29 de 29, `phase: evidence` e bloco `evidence` |
+| `.work/changes/archive/2026-10-07-listagem-filmes/tasks.md` | alterado | Task 10.3 marcada `[x]` nesta fase |
+| `.work/changes/archive/2026-10-07-listagem-filmes/.devflow.yaml` | alterado | `completed_tasks` 29 de 29, `phase: evidence` e bloco `evidence` |
 
 ## Decisões técnicas
 Pilar 7: o build passa sem token e sem rede, pois nenhuma página lê o TMDB durante o build.

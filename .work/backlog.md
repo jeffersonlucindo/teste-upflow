@@ -8,10 +8,10 @@
 | id | title | kind | source | change | state |
 |----|-------|------|--------|--------|-------|
 | L1 | Setup do projeto: scaffold Next.js (App Router) + TypeScript, cliente TMDB com token via variável de ambiente, .env.example | setup | DESAFIO.md › Setup | setup-catalogo, tmdb-client | done |
-| L2 | Listagem de filmes populares com paginação | requisito | DESAFIO.md › Requisitos Obrigatórios | listagem-filmes | doing |
-| L3 | Busca por título | requisito | DESAFIO.md › Requisitos Obrigatórios | listagem-filmes | doing |
-| L4 | Filtro por gênero | requisito | DESAFIO.md › Requisitos Obrigatórios | listagem-filmes | doing |
-| L5 | Ordenação por popularidade, nota e data de lançamento | requisito | DESAFIO.md › Requisitos Obrigatórios | listagem-filmes | doing |
+| L2 | Listagem de filmes populares com paginação | requisito | DESAFIO.md › Requisitos Obrigatórios | listagem-filmes | done |
+| L3 | Busca por título | requisito | DESAFIO.md › Requisitos Obrigatórios | listagem-filmes | done |
+| L4 | Filtro por gênero | requisito | DESAFIO.md › Requisitos Obrigatórios | listagem-filmes | done |
+| L5 | Ordenação por popularidade, nota e data de lançamento | requisito | DESAFIO.md › Requisitos Obrigatórios | listagem-filmes | done |
 | L6 | Página de detalhe em /movie/[id]: sinopse (com fallback de idioma), nota, elenco principal e trailer quando houver | requisito | DESAFIO.md › Requisitos Obrigatórios | detalhe-filme | todo |
 | L7 | Favoritos: persistência no client e página/aba que liste os favoritos | requisito | DESAFIO.md › Requisitos Obrigatórios | favoritos | todo |
 | L8 | README com instruções de execução, decisões técnicas e trade-offs | entrega | DESAFIO.md › Entrega | setup-catalogo (esqueleto), readme-entrega | doing |

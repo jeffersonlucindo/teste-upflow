@@ -23,7 +23,7 @@ Decisão 5 (loader sob `<Suspense>`, D22) e decisão 6 (select). Ajuste do QA: o
 ## Resultado
 Gêneros em pt-BR no select; escolher cria `/?genre=28` com entrada no histórico; `/?genre=999999` mostra "Nenhum filme encontrado" com "Limpar filtros".
 
-**QA** (`.work/changes/listagem-filmes/.devflow.yaml > qa`; `advisory-only`, `functional: pass`):
+**QA** (`.work/changes/archive/2026-10-07-listagem-filmes/.devflow.yaml > qa`; `advisory-only`, `functional: pass`):
 - E2E: spec `e2e/listagem-filmes.spec.ts`, 38 passed e 0 skipped nos projetos desktop e mobile.
 - Layout: gates (`expectNoHorizontalOverflow`, `expectTokenColors`, `expectMinHeight`, `expectFontVariable`, `expectFocusRing`) verdes. Finding em aberto (baixo, `suggestion`, `src/app/page.tsx`): `h1` em `text-4xl` (36 px) contra 40 px/1.1/-0.01em do README de design; o `design.md` prescreve `text-4xl`, herdado do `setup-catalogo`.
 
