@@ -1,0 +1,54 @@
+@import "tailwindcss";
+@source not "../../.work";
+
+/*
+ * Design System "Catálogo." — única fonte de cores do código.
+ * Os nomes e valores espelham .work/design/tokens/tokens.json (1:1) e são conferidos por
+ * scripts/check-tokens.mjs (npm run tokens:check). Para mudar uma cor, mude o token lá e aqui.
+ */
+@theme {
+  --color-*: initial;
+
+  --color-bg-base: #121316;
+  --color-bg-overlay: #15161a;
+  --color-surface-100: #1c1e23;
+  --color-surface-200: #23262c;
+  --color-border-subtle: #2a2d34;
+  --color-border-strong: #3a3e47;
+  --color-text-primary: #ececef;
+  --color-text-secondary: #cfd1d6;
+  --color-text-muted: #a3a6ad;
+  --color-text-subtle: #6e727b;
+  --color-accent: #f2b84b;
+  --color-on-accent: var(--color-bg-base);
+  --color-focus-ring: var(--color-accent);
+  --color-upflow-blue: #1328db;
+
+  /* Palavras-chave que o `initial` acima também apaga. */
+  --color-transparent: transparent;
+  --color-current: currentColor;
+}
+
+/* As variáveis --font-heading e --font-body vêm do next/font/local (src/app/fonts.ts). */
+@theme inline {
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-bg-base font-sans text-text-primary antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-focus-ring;
+  }
+
+  ::placeholder {
+    @apply text-text-muted;
+  }
+}
