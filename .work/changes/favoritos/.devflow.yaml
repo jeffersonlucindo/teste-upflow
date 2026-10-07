@@ -4,7 +4,7 @@ workItems:
   provider: none
   parents: [L7]
   tasks: []
-phase: apply
+phase: commit
 artifacts:
   proposal: done
   design: done
@@ -25,3 +25,23 @@ implementation:
     browser: "grupo 6 verificado em Chromium contra next dev com a flag: 39 verificações (favoritar, payload com as sete chaves em savedAt desc, reload, duas abas, payload corrompido, item inválido, localStorage bloqueado, HTML do servidor, badge nunca em 0 com rede lenta, 390 e 1280 px, ordem de tabulação, anel de foco), duas execuções seguidas"
     e2e_regression: "npm run e2e existente: 38 passed (desktop e mobile); o spec e2e/favoritos.spec.ts é da fase qa"
   updated_at: 2026-10-07T15:12:07Z
+qa:
+  iterations: 1
+  findings_resolved: 5        # 3 lacunas de teste unitario e 1 sugestao do code review (aplicada) + 1 de layout (gates do shell rodavam em / em vez de /favoritos)
+  findings_open: []
+  functional: pass            # npm run check (22 arquivos, 272 testes) e build
+  e2e: pass                   # 82 passed, 0 skipped (41 desktop, 41 mobile); e2e/favoritos.spec.ts com 22 testes
+  layout: pass                # gates deterministicos verdes em 1280 e 390 px; revisao visual sem divergencia
+  not_covered_e2e:
+    - "FavoriteButton full: so entra em tela no detalhe-filme"
+    - "badge nunca em 0 com rede lenta: instante da hidratacao nao deterministico; coberto no HTML do servidor"
+    - "build e next dev com CATALOGO_CACHE_COMPONENTS=1: verificacao do apply (implementation.validation.cache_components)"
+  status: passed
+  updated_at: 2026-10-07T16:15:46Z
+evidence:
+  parents: [L7]
+  tasks: [L7-1, L7-2, L7-3, L7-4, L7-5, L7-6, L7-7, L7-8]
+  published: false            # tracker: none; evidencias em docs/entrega/work-items/favoritos/
+commits:
+  count: 7
+  branch: feature/favoritos
