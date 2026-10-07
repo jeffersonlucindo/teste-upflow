@@ -22,8 +22,10 @@ sem reabrir):
 - `posterUrl(path, size): string | null` e `POSTER_SIZE = { card: "w342", detail: "w500" }` em
   `src/lib/tmdb/images.ts`, **sem** `server-only` (decisões 1 e 11 do design do `tmdb-client`:
   "o `FavoritesList` (client) monta a URL a partir do snapshot").
-- `MovieCardData = { id, title, posterUrl, voteAverage, voteCount, releaseYear }`,
-  `MovieCardProps = { movie, from? }`, `toMovieCardData(movie: MovieSummary)` e a posição do
+- `MovieCardData = { id, title, posterPath, releaseDate, posterUrl, releaseYear, voteAverage,
+  voteCount }` (oito campos: `posterPath`/`releaseDate` de origem para este change, os demais
+  derivados para o card), `MovieCardProps = { movie, from? }`, `toMovieCardData(movie:
+  MovieSummary)` (copia os de origem e deriva `posterUrl`/`releaseYear`) e a posição do
   `FavoriteButton` marcada por comentário (irmão do `<Link>` do pôster dentro de
   `div.relative.aspect-[2/3]`, `absolute top-2.5 right-2.5 w-10 h-10`) em
   `src/components/movies/MovieCard.tsx` (decisão 9 do design do `listagem-filmes`). `MovieGrid`
@@ -34,9 +36,9 @@ sem reabrir):
 Pendência herdada, resolvida aqui (decisão 2): D30 define `FavoriteSnapshot` sem `voteCount`, mas
 `MovieCardData.voteCount` é obrigatório (o card mostra "Sem nota" quando é 0). A chave
 `catalogo.favorites.v1` ainda não foi publicada, então o campo entra no snapshot sem migração.
-Segunda lacuna encontrada na leitura: `MovieCardData` não carrega `posterPath` nem `releaseDate`
-(só `posterUrl` e `releaseYear`), mas o `FavoriteButton` dentro do `MovieCard` precisa deles para
-montar o snapshot (decisão 9).
+`MovieCardData` já carrega `posterPath` e `releaseDate` de origem (decisão 9 do `listagem-filmes`,
+prevista para este botão), então o `FavoriteButton` dentro do `MovieCard` monta o snapshot sem
+mudança de contrato (decisão 9).
 
 Referência visual: `.work/design/screens/Favoritos.dc.html` (`h1` 40 px/800; subtítulo `text-muted`;
 grid igual ao da listagem com o coração preenchido em `accent` sobre `bg-overlay`; vazio `sc-if noFavs`:
@@ -110,7 +112,7 @@ Fatos do React 19.3 / Next 16.4 que o design assume e a task 1.1 confere:
   handler do clique), `FavoritesBadge` e `FavoritesList`. `MovieCard` continua shared e passa a
   renderizar o `FavoriteButton`; `src/app/favoritos/page.tsx` continua RSC estático.
 - `savedAt` nunca entra em prop: o botão recebe `FavoriteMovie` (snapshot sem `savedAt`), que
-  `MovieSummary`, `MovieDetail` e o `MovieCardData` estendido satisfazem por estrutura; o store copia
+  `MovieSummary`, `MovieDetail` e `MovieCardData` satisfazem por estrutura; o store copia
   explicitamente os seis campos ao gravar, então nada além do contrato vai para o `localStorage`.
 - Testes: funções puras com casos de borda; store com `Storage` injetada; hook com `renderHook`;
   componentes com Testing Library. Store e hook são critério de pronto; os de componente são os
@@ -125,7 +127,7 @@ Fatos do React 19.3 / Next 16.4 que o design assume e a task 1.1 confere:
    | `src/components/favorites/FavoriteButton.tsx` | client | `FavoriteButton`, `FavoriteButtonProps`, `FavoriteButtonVariant` | `@/lib/favorites/useFavorites`, `@/lib/favorites/store` (tipo) |
    | `src/components/favorites/FavoritesBadge.tsx` | client | `FavoritesBadge` | `@/lib/favorites/useFavorites` |
    | `src/components/favorites/FavoritesList.tsx` | client | `FavoritesList` | `@/lib/favorites/useFavorites`, `@/components/movies/MovieGrid`, `@/components/movies/MovieCard` (`toMovieCardData`), `@/components/ui/EmptyState` |
-   | `src/components/movies/MovieCard.tsx` (alterado) | shared | `MovieCard`, `MovieCardData` (+ `posterPath`, `releaseDate`), `MovieCardProps`, `toMovieCardData` | + `@/components/favorites/FavoriteButton` |
+   | `src/components/movies/MovieCard.tsx` (alterado) | shared | `MovieCard`, `MovieCardData`, `MovieCardProps`, `toMovieCardData` (inalterados) | + `@/components/favorites/FavoriteButton` |
    | `src/components/layout/Header.tsx` (alterado) | RSC | `Header` | + `@/components/favorites/FavoritesBadge` |
    | `src/app/favoritos/page.tsx` (reescrito) | RSC estático | `default`, `metadata` | `@/components/favorites/FavoritesList` |
    Regra de importação: nenhum arquivo deste change importa `@/lib/tmdb/client` (`server-only`);
@@ -160,7 +162,7 @@ Fatos do React 19.3 / Next 16.4 que o design assume e a task 1.1 confere:
    `releaseYear()`. `FavoriteMovie` existe porque `savedAt` não pode vir por prop: o `MovieCard` é
    shared e renderiza no servidor, onde `Date.now()` é proibido (pilar 1); o botão recebe o filme e o
    store carimba `savedAt` no clique. É um tipo derivado (`FavoriteSnapshot` sem `savedAt`), não um
-   nome paralelo a `MovieSummary`: `MovieSummary`, `MovieDetail` e o `MovieCardData` estendido
+   nome paralelo a `MovieSummary`: `MovieSummary`, `MovieDetail` e `MovieCardData`
    satisfazem `FavoriteMovie` por estrutura, então `<FavoriteButton movie={movie} />` funciona com
    qualquer um dos três sem adaptador (contrato da spec `cliente-tmdb`). `toFavoriteSnapshot` copia
    campo a campo (sem spread) para que `posterUrl`, `releaseYear`, `cast` ou `overview` nunca vazem
@@ -289,7 +291,7 @@ Fatos do React 19.3 / Next 16.4 que o design assume e a task 1.1 confere:
    ```
    `label = active ? FAVORITE_LABELS.remove : FAVORITE_LABELS.add`. Classes: `icon` →
    `absolute top-2.5 right-2.5 inline-flex h-10 w-10 items-center justify-center rounded-full
-   bg-bg-overlay text-text-primary transition-colors`, coração ativo `fill-accent text-accent`
+   bg-bg-overlay text-text-primary`, coração ativo `fill-accent text-accent`
    (`fill-*` do Tailwind v4 vence o atributo `fill="none"`); `full` → `inline-flex min-h-11
    items-center gap-2 rounded-lg bg-accent px-[18px] font-semibold text-on-accent`, coração ativo
    `fill-current` (o botão já é `accent`, então o preenchido é `on-accent`). Foco pelo
@@ -306,6 +308,10 @@ Fatos do React 19.3 / Next 16.4 que o design assume e a task 1.1 confere:
    o do protótipo, aceito em `components.md › Acessibilidade`. Alternativa descartada: dois
    componentes (`FavoriteIconButton`, `FavoriteToggle`): o estado e o `aria` são idênticos, só a
    casca muda.
+   Ajuste do apply (task 6.5): o `transition-colors` previsto para o `icon` saiu. As cores do
+   próprio botão nunca mudam (quem muda é o `fill` do SVG), então a transição só animava o
+   `outline-color` do anel de foco, que aparecia em `text-primary` e levava 150 ms para chegar ao
+   `focus-ring` (medido no browser: `rgb(236, 236, 239)` logo após o Tab, `rgb(242, 184, 75)` depois).
 7. **`FavoritesBadge`** (client; `components.md` linha `FavoritesBadge`; D31):
    ```ts
    export function FavoritesBadge(): ReactNode;
@@ -341,7 +347,7 @@ Fatos do React 19.3 / Next 16.4 que o design assume e a task 1.1 confere:
    `src/app/favoritos/page.tsx`:
    ```tsx
    export const metadata: Metadata = { title: "Meus favoritos" };
-   export default function FavoritesPage() {
+   export default function FavoritosPage() {
      return (
        <section className="flex flex-col gap-6">
          <div className="flex flex-col gap-1.5">
@@ -353,30 +359,25 @@ Fatos do React 19.3 / Next 16.4 que o design assume e a task 1.1 confere:
      );
    }
    ```
-   Nenhum `searchParams`, `cookies()`, `connection()` ou `fetch`: a página é prerenderizada como
+   (Ajuste do apply, task 1.1: o componente mantém o nome `FavoritosPage` do esqueleto do
+   `setup-catalogo`.) Nenhum `searchParams`, `cookies()`, `connection()` ou `fetch`: a página é prerenderizada como
    estática (`○`) nos dois modos de D2 e a parte dinâmica inteira acontece no client depois de
    montar. Classes do `h1` e da `section` são as do esqueleto do `setup-catalogo`. Alternativa
    descartada: ler um cookie para prerenderizar os favoritos (D31).
-9. **`MovieCard` alterado** (shared; decisão 9 do design do `listagem-filmes`; D23):
-   ```ts
-   export interface MovieCardData {
-     id: number; title: string; posterUrl: string | null;
-     voteAverage: number; voteCount: number; releaseYear: number | null;
-     posterPath: string | null; releaseDate: string | null; // origem (TMDB), usados pelo FavoriteButton
-   }
-   export function toMovieCardData(movie: MovieSummary): MovieCardData; // + posterPath: movie.posterPath, releaseDate: movie.releaseDate
-   ```
-   Mudança aditiva: os dois campos de origem entram ao lado dos derivados (`posterUrl`, `releaseYear`)
-   porque o `FavoriteButton` dentro do card precisa do caminho e da data ISO para o snapshot (decisão
-   2), e `MovieGrid` só transporta `MovieCardData`. `MovieResults` não muda (já chama
-   `toMovieCardData`); `MovieCard.test.tsx` passa a esperar os oito campos. A inserção, na posição
+9. **`MovieCard` alterado** (shared; decisão 9 do design do `listagem-filmes`; D23): `MovieCardData`
+   e `toMovieCardData` não mudam. O contrato do `listagem-filmes` já traz `posterPath` e
+   `releaseDate` de origem ao lado dos derivados (`posterUrl`, `releaseYear`) exatamente para este
+   botão, que precisa do caminho e da data ISO para o snapshot (decisão 2); `MovieGrid` só
+   transporta `MovieCardData` e `MovieResults` não muda. A única alteração é a inserção, na posição
    marcada pelo comentário do `listagem-filmes`:
    ```tsx
-   <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-surface-200">
+   <div className="relative aspect-[2/3] rounded-xl bg-surface-200">
      <Link href={href} aria-label={`Ver detalhes de ${movie.title}`} className="absolute inset-0 …">…</Link>
      <FavoriteButton movie={movie} variant="icon" />
    </div>
    ```
+   (Ajuste do apply, task 1.1: o `div` real do `listagem-filmes` não tem `overflow-hidden`, que
+   cortaria o anel de foco do link; o trecho acima segue o código instalado.)
    Irmão do `<Link>`, nunca dentro (botão dentro de link é HTML inválido e o `aria-pressed` entraria
    no nome do link); vem depois do `<Link>` no DOM, então fica por cima do pôster e na ordem de
    tabulação logo após ele. `movie` (um `MovieCardData`) satisfaz `FavoriteMovie` por estrutura;
@@ -384,9 +385,9 @@ Fatos do React 19.3 / Next 16.4 que o design assume e a task 1.1 confere:
    diretiva: renderiza no servidor pela listagem e no client pelo `FavoritesList`; importar um
    componente client de um shared é permitido. Consequência registrada: a listagem passa a ter 20
    ilhas client pequenas (um botão por card), todas assinando o mesmo store; uma alternância
-   re-renderiza os 20 botões (barato). Alternativa descartada: refazer `MovieCardData` como
-   `MovieSummary` puro com o card derivando URL e ano (mais limpo, mas reescreve o contrato e os
-   testes do `listagem-filmes`; fica anotado como melhoria).
+   re-renderiza os 20 botões (barato). Alternativa descartada: trocar `MovieCardData` por
+   `MovieSummary` puro com o card derivando URL e ano (reescreveria o contrato e os testes do
+   `listagem-filmes`; fica anotado como melhoria).
 10. **Mapeamento de tokens** (D33, pilar 5; `tokens/README.md > Mapa de uso`):
     | Elemento | Classes (tokens 1:1) |
     |---|---|
@@ -399,7 +400,7 @@ Fatos do React 19.3 / Next 16.4 que o design assume e a task 1.1 confere:
     | Foco | `:focus-visible` global com `outline-focus-ring` |
     `accent` aparece só no coração ativo, no botão `full` (ação primária do detalhe) e na ação do
     vazio; nenhuma cor literal em `src/` (os SVGs usam `currentColor`/`none`; `tokens:check` falha
-    se houver). `transition-colors` e `opacity` não são cor.
+    se houver).
 11. **Acessibilidade e responsivo** (D35; `components.md > Acessibilidade`): `<button type="button">`
     nativo com `aria-pressed` e `aria-label` (só no `icon`); nome do `NavLink` Favoritos inclui a
     contagem; `ul role="list"` e links do card herdados do `MovieGrid`/`MovieCard`; ordem de
@@ -450,9 +451,9 @@ Fatos do React 19.3 / Next 16.4 que o design assume e a task 1.1 confere:
       título do protótipo e link "Explorar filmes" para `/`; com dois itens gravados → `list` com
       dois cards, títulos em `savedAt` desc; clicar no coração do primeiro → um card; `vi.mock("next/image")`
       se o jsdom reclamar (como no `MovieCard.test.tsx`).
-    - `src/components/movies/MovieCard.test.tsx` (ajuste): `toMovieCardData` devolve também
-      `posterPath` e `releaseDate`; o card tem um `button` com `aria-pressed="false"` e nome
-      "Adicionar aos favoritos", irmão do link do pôster.
+    - `src/components/movies/MovieCard.test.tsx` (ajuste): o card tem um `button` com
+      `aria-pressed="false"` e nome "Adicionar aos favoritos", irmão do link do pôster (nunca
+      dentro dele); as asserções existentes sobre `toMovieCardData` não mudam.
     Ordem de corte deste change se faltar prazo (D43): `FavoritesBadge.test` → `FavoritesList.test`
     → `FavoriteButton.test`. Não cortáveis: store, hook, os critérios do backlog (inclusive abas).
 13. **Dois modos de `cacheComponents`** (D2, D42; critério no `tasks.md`): sem a flag, `/favoritos`
@@ -464,9 +465,9 @@ Fatos do React 19.3 / Next 16.4 que o design assume e a task 1.1 confere:
 14. **Registro** (no apply, conforme a regra dos próprios arquivos): `components.md` recebe na linha
     `FavoriteButton` a prop `movie: FavoriteMovie` (snapshot sem `savedAt`; aceita `MovieSummary`,
     `MovieDetail`, `MovieCardData`) e o `fill-current` do `full` ativo; na linha `FavoritesBadge` o
-    singular "1 favorito"; na linha `FavoritesList` o `hydrated`; na linha `MovieCard` os campos
-    `posterPath`/`releaseDate` em `MovieCardData`; e, onde `FavoriteSnapshot` é citado, o campo
-    `voteCount`. `decisoes.md`: a linha D30 passa a listar `{ id, title, posterPath, voteAverage,
+    singular "1 favorito"; na linha `FavoritesList` o `hydrated`; e, onde `FavoriteSnapshot` é
+    citado, o campo `voteCount` (os oito campos de `MovieCardData` já são registro da task 9.1 do
+    `listagem-filmes`). `decisoes.md`: a linha D30 passa a listar `{ id, title, posterPath, voteAverage,
     voteCount, releaseDate, savedAt }` com a nota "`voteCount` acrescentado no propose do `favoritos`
     (2026-10-07): `MovieCardData.voteCount` é obrigatório para 'Sem nota'". `backlog.md`: L7 `doing`
     no apply, `done` no finish. README: nada aqui; a lista para a seção "Decisões técnicas e
@@ -485,8 +486,9 @@ Fatos do React 19.3 / Next 16.4 que o design assume e a task 1.1 confere:
   bloqueia storage sabe). Não há `aria-live` avisando.
 - Payload corrompido só é sobrescrito na próxima gravação (decisão 3) → inofensivo: a leitura já
   devolve lista vazia; gravar durante o render seria efeito colateral em `getSnapshot`.
-- `MovieCardData` com `posterPath`/`releaseDate` ao lado de `posterUrl`/`releaseYear` → redundância
-  pequena e aditiva; o refactor para `MovieSummary` puro fica como melhoria (decisão 9).
+- `MovieCardData` com `posterPath`/`releaseDate` ao lado de `posterUrl`/`releaseYear` (contrato do
+  `listagem-filmes`) → redundância pequena; o refactor para `MovieSummary` puro fica como melhoria
+  (decisão 9).
 - 20 ilhas client na listagem (um botão por card) → cada uma é um `<button>` com um hook; o payload
   de hidratação cresce poucos bytes por card. Alternativa (um único client wrapper no grid) tiraria
   o `MovieCard` do servidor.

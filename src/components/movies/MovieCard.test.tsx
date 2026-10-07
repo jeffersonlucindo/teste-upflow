@@ -82,6 +82,17 @@ describe("MovieCard", () => {
     expect(screen.getByRole("link", { name: "Matrix" })).toHaveAttribute("href", "/movie/603");
   });
 
+  it("traz o botão de favorito desligado, irmão do link do pôster e fora dele", () => {
+    render(<MovieCard movie={cardData()} />);
+    const button = screen.getByRole("button", { name: "Adicionar aos favoritos" });
+
+    expect(button).toHaveAttribute("aria-pressed", "false");
+    expect(button.closest("a")).toBeNull();
+    expect(button.previousElementSibling).toBe(
+      screen.getByRole("link", { name: "Ver detalhes de Matrix" }),
+    );
+  });
+
   it("carrega o estado da listagem em from", () => {
     render(<MovieCard movie={cardData()} from="q=matrix&page=2" />);
 

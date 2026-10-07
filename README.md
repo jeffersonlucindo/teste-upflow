@@ -2,7 +2,7 @@
 
 Catálogo de filmes sobre a API pública do TMDB, feito para o teste técnico de Desenvolvedor Frontend da UpFlow (enunciado em [`DESAFIO.md`](DESAFIO.md)).
 
-> **Estado atual:** base do projeto e camada de dados. Já existem o scaffold, o Design System, o shell de navegação, as páginas `/` e `/favoritos` com o esqueleto visual e o cliente do TMDB em `src/lib/tmdb/`. Listagem, busca, filtros, detalhe e favoritos ainda não foram implementados.
+> **Estado atual:** a listagem em `/` (populares, busca, filtro por gênero, ordenação e paginação) e os favoritos (coração no card, contagem no header e a página `/favoritos`) estão implementados sobre o cliente do TMDB em `src/lib/tmdb/`. A página de detalhe em `/movie/[id]` ainda não foi implementada.
 
 ## Como rodar
 
@@ -18,7 +18,7 @@ No PowerShell, a cópia é `Copy-Item .env.example .env.local`.
 
 Abra <http://localhost:3000>.
 
-Em `.env.local`, preencha `TMDB_API_READ_TOKEN` com o **API Read Access Token (v4)** da sua conta em <https://www.themoviedb.org/settings/api>. O token é lido só no servidor e nunca recebe o prefixo `NEXT_PUBLIC_`. Nesta etapa nenhuma página chama o TMDB, então `npm run dev` e `npm run build` funcionam mesmo sem `.env.local`.
+Em `.env.local`, preencha `TMDB_API_READ_TOKEN` com o **API Read Access Token (v4)** da sua conta em <https://www.themoviedb.org/settings/api>. O token é lido só no servidor e nunca recebe o prefixo `NEXT_PUBLIC_`. Sem `.env.local`, `npm run build` passa e `/favoritos` funciona, mas a listagem em `/` mostra a tela de erro pedindo a variável.
 
 Para conferir o token sem subir a aplicação:
 
@@ -80,15 +80,15 @@ src/
 │   ├── layout.tsx            html pt-BR, Header e container
 │   ├── page.tsx              /            (listagem: título e dois <Suspense>)
 │   ├── error.tsx             erro do segmento, com "Tentar novamente"
-│   ├── favoritos/page.tsx    /favoritos
+│   ├── favoritos/page.tsx    /favoritos   (estática; a lista vem do navegador)
 │   └── movie/[id]/           /movie/[id]  (previsto)
 ├── components/
 │   ├── layout/               Header, NavLink
 │   ├── ui/                   Button, ButtonLink, EmptyState, ErrorState
 │   ├── movies/               FilterBar, FilterBarLoader, MovieResults, MovieGrid, MovieCard,
 │   │                         MovieGridSkeleton, Pagination, ListingTransition
-│   ├── movie-detail/         previsto
-│   └── favorites/            previsto
+│   ├── favorites/            FavoriteButton, FavoritesBadge, FavoritesList (ilhas client)
+│   └── movie-detail/         previsto
 └── lib/
     ├── tmdb/                 única porta para a API do TMDB
     │   ├── client.ts         server-only: getGenres, fetchListing, getMovieDetail
@@ -102,8 +102,10 @@ src/
     │   └── fixtures/         respostas de exemplo usadas nos testes
     ├── listing/
     │   └── params.ts         URL da listagem ↔ estado (q, genre, sort, page)
-    ├── format/               nota ("7,2") e ano de lançamento
-    └── …                     previsto: favorites/
+    ├── favorites/
+    │   ├── store.ts          formato, validação e store sobre o localStorage
+    │   └── useFavorites.ts   hook com useSyncExternalStore
+    └── format/               nota ("7,2") e ano de lançamento
 e2e/                          testes de ponta a ponta e de layout (Playwright)
 ├── support/                  gates de layout, tokens e pré-requisito do TMDB
 └── *.spec.ts                 um arquivo por fluxo
@@ -190,6 +192,28 @@ Decisões aplicadas até aqui, cada uma com a alternativa considerada e o que se
 
 **Grid de duas colunas no celular.** A 390 px o grid tem duas colunas e os selects dividem uma linha; de 640 px em diante as colunas se ajustam a um mínimo de 200 px, o que dá cinco a 1280 px, contra as quatro do protótipo. O contêiner do pôster não usa `overflow-hidden`, que cortava o anel de foco do link; quem arredonda é a imagem.
 
+### Favoritos
+
+**Store próprio sobre `localStorage`, com `useSyncExternalStore`.** `src/lib/favorites/store.ts` tem as regras em funções puras (validar, ordenar, alternar) e um store criado por fábrica, que recebe a `Storage` por parâmetro; os testes injetam uma que funciona, uma que lança e uma que falha só na gravação. `useFavorites()` é o único hook e não usa `useState` nem `useEffect`. As alternativas eram Context com `useEffect`, que re-renderiza todos os consumidores e exige um provider no layout, e Zustand com `persist`, uma dependência para um store só. A armadilha do caminho escolhido é que `getSnapshot` precisa devolver a mesma referência enquanto nada muda: o store lê a string gravada a cada chamada e só refaz o parse quando ela muda, o que também o corrige sozinho se a chave for alterada por fora.
+
+**Guardar um resumo do filme, não só o id.** Cada favorito grava `id`, `title`, `posterPath`, `voteAverage`, `voteCount`, `releaseDate` e `savedAt` na chave `catalogo.favorites.v1`, dentro de `{ version: 1, items }`, do mais recente para o mais antigo. Com isso `/favoritos` é uma página estática que não chama o TMDB. O preço é que os dados envelhecem: a nota e o pôster salvos não acompanham mudanças na API. Guardar só os ids exigiria uma chamada por filme e um route handler para não expor o token. O caminho do pôster e a data são gravados como vieram da API; a URL da imagem e o ano são derivados na hora de montar o card. O que a origem tiver a mais, como elenco e sinopse, não é gravado.
+
+**O servidor renderiza a página sem favoritos.** Ele não conhece o `localStorage`, então o HTML sai com todos os corações desligados e sem badge, e o primeiro render no browser repete isso para a hidratação bater; os favoritos entram no render seguinte. O badge fica oculto até lá e com total zero, então nunca pisca "0", e a lista de `/favoritos` não mostra o estado vazio antes de saber se há itens. O que não dá para evitar sem cookie é o coração dos filmes já salvos aparecer vazio por um instante depois de recarregar, e um clique feito antes da hidratação não ter efeito. Saber se já hidratou também sai de `useSyncExternalStore` (falso no servidor, verdadeiro no browser), em vez do `useState` com `useEffect` que as regras do React Compiler no ESLint reprovam.
+
+**A data de inclusão nasce no clique.** O botão recebe o filme sem `savedAt` e o store carimba o momento ao gravar. O card é renderizado no servidor pela listagem e nenhum componente pode ler o relógio durante o render, o que também mantém `/favoritos` estática com `cacheComponents` ligado. O botão aceita o item da listagem, o detalhe do filme e os dados do card sem adaptador, porque os três têm os seis campos do resumo.
+
+**Dados inválidos não quebram a tela.** O payload é validado por type guards próprios, sem biblioteca de schema: são sete campos. JSON ilegível, versão desconhecida ou formato errado viram lista vazia; um item inválido é descartado sozinho, sem levar os outros; de um id repetido fica o salvo por último. Nada é gravado durante a leitura, que acontece no render: o conteúdo corrompido é sobrescrito na próxima vez que o usuário favoritar.
+
+**Sem `localStorage`, segue em memória.** Acessar, ler ou gravar pode lançar (armazenamento bloqueado, cota cheia). Na primeira exceção o store passa a trabalhar só em memória pelo resto da sessão: favoritar continua alternando o coração e a contagem, sem mensagem de erro, e ao recarregar a lista volta vazia. Não há aviso ao usuário de que nada está sendo salvo.
+
+**Abas sincronizadas pelo evento `storage`.** Favoritar em uma aba atualiza as outras sem recarregar. O evento só dispara nas outras abas, então a aba que gravou avisa os próprios componentes por conta própria. O listener é registrado quando o primeiro componente assina e removido quando o último sai.
+
+**Um botão por card, cada um uma ilha client.** O card continua renderizado no servidor e só o coração hidrata; a listagem passa a ter 20 ilhas pequenas assinando o mesmo store, e um clique re-renderiza os 20 botões, o que é barato nesta escala. A alternativa, um wrapper client em volta do grid, tiraria o card do servidor. O botão é irmão do link do pôster, nunca filho: botão dentro de link é HTML inválido. Tem 40 px, como no protótipo, abaixo dos 44 px dos demais controles, e não tem transição de cor, que só fazia o anel de foco surgir em cinza antes de chegar ao âmbar.
+
+**Contagem no nome da aba.** O badge leva `aria-label` com "1 favorito" ou "N favoritos", que entra no nome acessível do link Favoritos. Não há região `aria-live`: a contagem muda por ação do próprio usuário, que já ouve o estado do botão.
+
+**Estado vazio do protótipo.** Sem favoritos, a página usa o mesmo `EmptyState` dos outros estados excepcionais, com o coração, os textos do protótipo e a ação "Explorar filmes".
+
 ## Melhorias futuras
 
 - Type guard mínimo nas respostas do TMDB, para que uma mudança de formato vire `TmdbError` em vez de campo vazio na tela.
@@ -197,5 +221,8 @@ Decisões aplicadas até aqui, cada uma com a alternativa considerada e o que se
 - Indicador de carregamento nos links da paginação (`useLinkStatus`) e `loading="eager"` no primeiro pôster.
 - Título `h1` em 40 px, como no protótipo; hoje está em 36 px.
 - Validar o `genre` da URL contra a lista de gêneros; hoje um id desconhecido cai no estado vazio.
+- Mover o foco para o card seguinte ao remover um favorito em `/favoritos`; hoje ele vai para o corpo da página.
+- Avisar quando os favoritos não estão sendo salvos porque o armazenamento do navegador está bloqueado.
+- Um seletor por filme (`useIsFavorite(id)`), para um clique re-renderizar só o botão que mudou, se a lista crescer.
 
 Demais itens a definir ao final da implementação.
