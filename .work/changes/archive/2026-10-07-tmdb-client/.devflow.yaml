@@ -4,7 +4,7 @@ workItems:
   provider: none
   parents: [L1]
   tasks: []
-phase: commit
+phase: finish
 artifacts:
   proposal: done
   design: done
@@ -46,3 +46,12 @@ commits:
   count: 5
   refs: []
   updated_at: 2026-10-07T13:06:35Z
+pr:
+  id: 1
+  url: https://github.com/jeffersonlucindo/desafio-up-flow/pull/1
+  linkedItems: [L1]
+finish:
+  archived_at: 2026-10-07T13:30:20Z
+  archive: .work/changes/archive/2026-10-07-tmdb-client/
+  specs_synced: [cliente-tmdb]
+  merge: a9cad17

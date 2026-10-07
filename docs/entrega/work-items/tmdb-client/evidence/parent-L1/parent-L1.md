@@ -26,9 +26,9 @@ O change `tmdb-client` entregou a porta única para a API do TMDB em `src/lib/tm
 | `src/lib/tmdb/*.test.ts` | criado | Seis arquivos, 82 testes |
 | `src/lib/tmdb/fixtures/*.json` | criado | `genres`, `discover-page` e `movie-603` |
 | `scripts/tmdb-probe.mjs` | criado | Sonda contra a API real |
-| `.work/changes/tmdb-client/probe-output.txt` | criado | Saída real da sonda e da checagem complementar |
+| `.work/changes/archive/2026-10-07-tmdb-client/probe-output.txt` | criado | Saída real da sonda e da checagem complementar |
 | `README.md` | alterado | Sonda, segurança do token, decisões de dados e árvore de `src/lib/tmdb/` |
-| `.work/design/decisoes.md`, `.work/changes/tmdb-client/design.md` | alterado | Resultado das verificações de D17, D18 e D19 |
+| `.work/design/decisoes.md`, `.work/changes/archive/2026-10-07-tmdb-client/design.md` | alterado | Resultado das verificações de D17, D18 e D19 |
 
 ## Decisões técnicas
 Aplicadas D12 a D21 e D23. As que mais pesam: porta única com `server-only` e token lido a cada chamada (D12); cache só por `fetch` com `force-cache` e `revalidate` de 86 400 s para gêneros e 3 600 s para listagem e detalhe (D20); erro classificado por `kind` (D21); cortes de votos e de data só nas ordenações que os pedem (D15, D16); página limitada a 500 (D17); sinopse com fallback de idioma (D18) e trailer com prioridade oficial, `pt`, `en`, mais recente (D19). Desvios registrados: HTTP 400 em vez de 422 na página 501; `include_video_language` com `pt-BR,pt,en,null` (aprovado pelo usuário); o README não cita ids D<n> nem L<n>, por regra de `.work/config.yaml` (desvio da task 6.1).
@@ -36,4 +36,4 @@ Aplicadas D12 a D21 e D23. As que mais pesam: porta única com `server-only` e t
 ## Resultado
 `npm run tokens:check`, `lint`, `typecheck`, `test` (8 arquivos, 95 testes) e `build` passam, e o build não precisa de `.env.local` nem de rede. O contrato de dados que `listagem-filmes`, `favoritos` e `detalhe-filme` consomem está fixado e testado, e a sonda confirmou o formato real da API.
 
-QA (`.work/changes/tmdb-client/.devflow.yaml > qa`): 2 iterações, 8 findings resolvidos, `functional: pass` (`npm run check` com 95 testes em 8 arquivos e `npm run build` verdes), status `advisory-only`, com dois advisory baixos em aberto, ambos de `README.md` (linha `@source not "../../.work"` já existente em develop e fora do diff; diff da árvore com trechos de Playwright/E2E do ferramental, fora dos commits deste change). E2E e layout: `not-applicable` (o change não toca `src/app/**` nem `src/components/**`; sem tela, sem screenshots a copiar).
+QA (`.work/changes/archive/2026-10-07-tmdb-client/.devflow.yaml > qa`): 2 iterações, 8 findings resolvidos, `functional: pass` (`npm run check` com 95 testes em 8 arquivos e `npm run build` verdes), status `advisory-only`, com dois advisory baixos em aberto, ambos de `README.md` (linha `@source not "../../.work"` já existente em develop e fora do diff; diff da árvore com trechos de Playwright/E2E do ferramental, fora dos commits deste change). E2E e layout: `not-applicable` (o change não toca `src/app/**` nem `src/components/**`; sem tela, sem screenshots a copiar).
