@@ -4,7 +4,7 @@ workItems:
   provider: none
   parents: [L8]
   tasks: []
-phase: pr
+phase: finish
 artifacts:
   proposal: done
   design: done
@@ -12,10 +12,10 @@ artifacts:
   specs: none
 implementation:
   status: completed
-  completed_tasks: 20
+  completed_tasks: 21
   total_tasks: 22
   current_task: ""
-  pending_delivery: ["5.1", "5.2"]   # dependem do merge do PR e da promoção develop → main; fecham no finish
+  pending_delivery: ["5.1"]           # promoção develop → main e convites: dependem do merge do PR 6
   validated: true
   validation:
     status: passed
@@ -41,3 +41,12 @@ pr:
   state: open
   opened_at: 2026-10-07
   linkedItems: [L8]
+finish:
+  archived_at: 2026-10-07T20:13:03Z
+  archive: .work/changes/archive/2026-10-07-readme-entrega/
+  specs_synced: []            # change sem specs
+  backlog: "L8 → done"
+  merge: pending            # finalizado na propria branch, a pedido, antes do merge do PR 6
+  warnings:
+    - "task 5.1 aberta: PR develop → main, conferência de origin/main e convites aos dois e-mails"
+    - "data do compartilhamento ainda não registrada em decisoes.md › Perguntas em aberto"

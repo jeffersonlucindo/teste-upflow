@@ -19,7 +19,7 @@ Este change fecha o README exigido pelo enunciado. O texto acumulado pelos cinco
 | Arquivo | Ação | Descrição |
 |---------|------|-----------|
 | `README.md` | alterado | Consolidação por área; seções novas de rotas, fronteira, testes, acessibilidade e o que ficou de fora |
-| `.work/changes/readme-entrega/` | criado | Proposal, design (com "Ajustes do apply"), tasks, estado e `change.html` |
+| `.work/changes/archive/2026-10-07-readme-entrega/` | criado | Proposal, design (com "Ajustes do apply"), tasks, estado e `change.html` |
 
 ## Decisões técnicas
 O README segue a regra de `.work/config.yaml`: trata só do código, sem ids de decisão, sem seção de processo e sem citar `.work/`. As decisões D1–D44 estão cobertas por conteúdo, conforme o mapa decisão → seção em "Ajustes do apply" do `design.md`; D8 e D41, que são sobre o fluxo, não têm registro no README. Os contrastes herdados (D34) foram mantidos e medidos, e os limites de acessibilidade encontrados foram registrados, não corrigidos.
