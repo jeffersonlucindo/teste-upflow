@@ -1,0 +1,94 @@
+# Decisões técnicas — desafio-up-flow
+
+> Capturado no `/devflow:explore` de 2026-10-06. Fonte para o `design.md` de cada change e para a
+> seção "Decisões técnicas e trade-offs" do README de entrega. A coluna **Onde** diz em qual change
+> a decisão é aplicada e registrada; o change `readme-entrega` consolida tudo no README.
+> Para reabrir uma decisão: registrar o motivo no `design.md` do change e atualizar a linha aqui.
+
+## Como ler
+
+- **D<n>**: id estável para citar no `design.md` ("aplica D13, D22").
+- **Alternativas**: o que foi considerado e descartado.
+- **Trade-off**: o que se ganha e o que se perde com a escolha.
+- **Onde**: change que aplica · seção do README que registra.
+
+## A. Stack e scaffold
+
+| id | Decisão | Alternativas | Trade-off | Onde |
+|---|---|---|---|---|
+| D1 | Next.js 16.4 (`latest` do npm em 2026-10-06), App Router, React 19.3, TypeScript strict | 15.5 (tag `backport`) | 16.4 é a estável; traz convenções novas (`params`/`searchParams` como Promise, `proxy` no lugar de `middleware`, sem `next lint`, Turbopack padrão). Docs da versão instalada em `node_modules/next/dist/docs/` | setup-catalogo · README "Stack" |
+| D2 | `cacheComponents` desligado por padrão; `next.config.ts` lê `CATALOGO_CACHE_COMPONENTS` (`1`/`true`) e liga `cacheComponents` + `partialPrefetching` juntos | ligado sempre (default da CLI 16.4); desligado sem toggle | Previsibilidade e build offline por padrão; o toggle demonstra shell estático e prefetch parcial sem fork de código. Preço: código escrito na interseção dos dois modelos, sem `'use cache'`/`cacheLife` (não existem com a flag desligada: `experimental.useCache` herda o valor de `cacheComponents`). `partialPrefetching` sem `cacheComponents` lança erro de validação, por isso ligam juntos | setup-catalogo · README "Decisões" e "Flags" |
+| D3 | Scaffold com `create-next-app@16.4.0` em diretório temporário e movido para a raiz (`--ts --eslint --tailwind --app --src-dir --import-alias "@/*"`) | copiar o shell de `reference/`; criar à mão; mover `.work` para fora e rodar na raiz | A CLI tolera `.claude`, `AGENTS.md`, `README.md`, `docs`, mas não `.work` nem `DESAFIO.md`. Temp + mover dá lockfile novo e nada herdado; custa uma hora a mais que copiar o shell | setup-catalogo · README "Como foi criado" |
+| D4 | npm, `package-lock.json` versionado, `engines.node >= 20.9`, `.nvmrc` 22, `npm ci` nas instruções | pnpm | Sem pré-requisito de corepack para o avaliador; pnpm é mais rápido mas adiciona atrito | setup-catalogo · README "Como rodar" |
+| D5 | Tailwind v4 via `@tailwindcss/postcss` (`postcss.config.mjs`) | loader `@tailwindcss/turbopack` em `turbopack.rules` | É o caminho documentado em `11-css.md` e funciona com `--webpack`; o loader é ligeiramente mais rápido no dev | setup-catalogo |
+| D6 | `src/` com organização por domínio: `app/`, `components/<domínio>/`, `lib/<domínio>/`; testes ao lado (`Nome.test.tsx`); sem `utils/` genérica | `app/` na raiz (default da CLI); `__tests__/` | Domínio deixa claro quem é dono de cada arquivo; o custo é um nível a mais de pasta | setup-catalogo · README "Estrutura" |
+| D7 | Vitest 5 + Testing Library (jsdom); script `test` é `vitest run`; só funções puras e componentes client/shared têm teste unitário | Jest; E2E com Playwright | Vitest é nativo ESM e rápido; async Server Components não são testáveis no Vitest (`testing/vitest.md`), então são verificados no browser no critério da task | setup-catalogo · README "Testes" |
+| D8 | `.work/` e `.claude/` versionados e explicados no README; `.work/design/reference/` ignorado (tem `.git` aninhado) | ignorar tudo | A trilha de decisões é um artefato a favor ("todo artefato será analisado"); risco de parecer ruído, mitigado por uma seção "Processo" curta | setup-catalogo · README "Processo" |
+| D9 | `scripts/check-tokens.mjs` próprio: confere `tokens.json` × `@theme` e proíbe cor literal em `src/`; usa `fileURLToPath` (o script do bundle de referência quebra no Windows com `C:\C:\...`, confirmado) | sem verificação; stylelint | Guardrail barato e visível para o design system; custa manter o script | setup-catalogo · README "Design System" |
+| D10 | `.gitattributes` com `* text=auto eol=lf`; `AGENTS.md` gerado pelo `next dev` é commitado | sem `.gitattributes` | Evita diff de CRLF para o avaliador e tree sujo a cada `next dev` | setup-catalogo |
+| D11 | Fontes self-hosted via `next/font/local`: arquivos latin `woff2` de Plus Jakarta Sans (variável, `--font-heading` → `font-display`) e IBM Plex Sans 400/500/600 (`--font-body` → `font-sans`) commitados em `src/app/fonts/` com as licenças OFL, extraídos uma vez dos pacotes fontsource (sem dependência no `package.json`) | `next/font/google`; pacotes fontsource com CSS próprio; `<link>` do Google Fonts | Revisada no propose do `setup-catalogo` (2026-10-07): `next/font/google` baixa CSS e fontes **no build** (`02-components/font.md`), o que viola o critério de build sem rede (pilar 7). Local custa ~100 KB de binários no repo e um passo de extração documentado; mantém self-host, `size-adjust` de fallback e zero rede em build e runtime | setup-catalogo · README "Decisões" |
+
+## B. Dados (TMDB)
+
+| id | Decisão | Alternativas | Trade-off | Onde |
+|---|---|---|---|---|
+| D12 | Cliente em `src/lib/tmdb/` com `import "server-only"`; Bearer (API Read Access Token v4) no header `Authorization`; `TMDB_LANGUAGE=pt-BR` | `api_key` v3 na URL; route handler como proxy | Header não vaza em log de URL; `server-only` falha o build se um client component importar o cliente. Proxy adicionaria um salto sem ganho | tmdb-client · README "Segurança do token" |
+| D13 | `/discover/movie` sempre, com `sort_by=popularity.desc` e `include_adult=false` como "populares" | `/movie/popular` sem filtros e `/discover` com filtros; popular + filtro local nos 20 itens | Um caminho só, filtros compõem; a ordem difere um pouco do endpoint popular oficial. README diz "populares = discover por popularidade" | tmdb-client · README "Decisões" |
+| D14 | Busca exclusiva: com `q` preenchido, gênero e ordenação ficam desabilitados com hint "Não se aplica à busca por título (limitação da API)" e são removidos da URL | (a) filtrar/ordenar localmente a página de 20 com aviso; (c) buscar até 3 páginas (60 itens), filtrar e paginar localmente | `/search/movie` só aceita `query, page, language, region, year, primary_release_year, include_adult` (verificado na referência oficial). (a) deixa páginas quase vazias com "Próxima" ativo e reordena por nota um conjunto ordenado por relevância. (c) é o melhor produto e fica como evolução se sobrar tempo | listagem-filmes · README "Trade-off principal" |
+| D15 | `vote_count.gte=200` somente quando `sort=rating`, constante nomeada em `lib/tmdb/params.ts` | sem corte; corte em toda ordenação | Sem corte o topo é filme com 1 voto e nota 10; corte na popularidade esconderia nicho | tmdb-client · README |
+| D16 | `primary_release_date.lte=<hoje UTC, YYYY-MM-DD>` somente quando `sort=release`, calculado depois do `await searchParams` (request-time) | sem corte | Evita filmes anunciados para anos à frente; a data só muda uma vez por dia, então o cache por URL do `fetch` tem um bucket diário | tmdb-client · README |
+| D17 | `totalPages = min(total_pages, 500)` no mapper; `page` da URL é clampado a `[1, totalPages]` | ignorar | Acima de 500 a API devolve 422 (não está no OpenAPI; fontes da comunidade). Clamp evita a página de erro | tmdb-client, listagem-filmes · README |
+| D18 | Detalhe em uma chamada: `/movie/{id}?append_to_response=credits,videos,translations`. Sinopse: pt-BR → en → qualquer não vazia, com o idioma de origem para o aviso; sem nenhuma, "Sinopse não disponível." | segunda chamada com `language=en-US` quando `overview` vier vazio | Uma chamada e fallback determinístico; custa uns 40 KB a mais no servidor. **Pendente de verificação** na primeira chamada real (task do tmdb-client); fallback é a segunda chamada | tmdb-client, detalhe-filme · README |
+| D19 | Trailer: `videos.results` com `site=YouTube` e `type=Trailer`; prioridade `official` > `iso_639_1=pt` > `en` > `published_at` mais recente; nada de Teaser | aceitar Teaser como fallback | Enunciado pede trailer. `include_video_language=pt,en,null` **pendente de verificação** (não aparece no OpenAPI atual); se não existir, segunda chamada `videos` com `language=en-US` quando a lista vier vazia | tmdb-client, detalhe-filme |
+| D20 | Cache somente no `fetch`: `cache: "force-cache"` + `next: { revalidate }` (gêneros 86400 s; listas e detalhe 3600 s), centralizado em `client.ts` | `'use cache'` + `cacheLife`; sem cache | É o único mecanismo honrado nos dois modos de D2. `fetch.md`: requisição com header `authorization` só entra no cache com `force-cache` explícito. Perde-se a granularidade por função e os perfis de `cacheLife` | tmdb-client · README |
+| D21 | `TmdbError` com `kind`: `config` (token ausente, nomeia a variável), `unauthorized`, `not_found`, `rate_limited` (429), `unavailable`. `not_found` → `notFound()`; os demais → `error.tsx` do segmento | lançar `Error` genérico | Mensagens úteis em dev; em produção o Next redige mensagens de erro do servidor (só `digest`), então o `error.tsx` mostra texto genérico com "Tentar novamente" | tmdb-client, listagem-filmes |
+| D22 | Gêneros carregados por um Server Component que faz `await connection()` antes de `getGenres()`, dentro do `<Suspense>` do FilterBar; fallback é a barra com o select de gênero desabilitado | lista estática de gêneros no código; fetch no shell | Com `cacheComponents` ligado, fetch cacheado alcançável pelo shell roda no `next build` e exigiria token e rede; `connection()` tira do shell nos dois modos. A lista estática pouparia uma chamada mas engessa | listagem-filmes · README |
+| D23 | Imagens via `next/image` com `remotePatterns` para `image.tmdb.org/t/p/**`; tamanhos `w342` (card), `w500` (detalhe), `w185` (elenco); `posterUrl()`/`profileUrl()` devolvem `null` sem caminho e a UI mostra placeholder | `<img>` puro | `next/image` dá `sizes`, lazy e formatos modernos; se faltar tempo, `<img>` é um dos cortes (D43) | tmdb-client, listagem-filmes |
+
+## C. Estado
+
+| id | Decisão | Alternativas | Trade-off | Onde |
+|---|---|---|---|---|
+| D24 | URL como única fonte da listagem: `q`, `genre`, `sort` (`popularity` \| `rating` \| `release`), `page`. `parseListingParams()` valida e normaliza; `buildListingHref()` omite defaults (`/` e não `/?page=1`) | `useState` no FilterBar | Link compartilhável, refresh e botão voltar funcionam; custa um parser testado | listagem-filmes · README |
+| D25 | Digitação usa `router.replace` com debounce de 350 ms; select e paginação usam `router.push`; qualquer mudança zera `page` | push em tudo; sem debounce | Histórico sem uma entrada por tecla; voltar funciona para filtros e páginas | listagem-filmes |
+| D26 | `useTransition` ao redor de `router.push/replace`: `isPending` vira `aria-busy` e opacidade no grid, mantendo os cards antigos até os novos chegarem. Skeleton só no primeiro load e em navegação direta | `<Suspense key={params}>` remontando a cada mudança | Sem piscar o skeleton a cada disparo do debounce | listagem-filmes · README |
+| D27 | FilterBar lê `useSearchParams()` por conta própria dentro do próprio `<Suspense>`; a página não passa `searchParams` para ele | página lê `searchParams` e passa como props | Passar como props tiraria o FilterBar do shell estático com D2 ligado; ler no client mantém o shell | listagem-filmes |
+| D28 | `Pagination` é Server Component com `<Link>` para página ± 1; nos limites renderiza `<span aria-disabled>` | botões client com `router.push` | Funciona sem JavaScript e não é ilha client | listagem-filmes |
+| D29 | Favoritos: store em `src/lib/favorites/store.ts` sobre `localStorage` (funções puras: ler, gravar, alternar, validar) + hook `useFavorites()` com `useSyncExternalStore` | React Context + `useEffect`; Zustand `persist` | Zero dependência, sem provider no layout, `getServerSnapshot` constante evita mismatch; armadilha: `getSnapshot` precisa devolver referência estável (cache do parse). Context re-renderizaria todos os consumidores; Zustand é dependência para um store só | favoritos · README |
+| D30 | Snapshot do filme salvo: `{ id, title, posterPath, voteAverage, releaseDate, savedAt }`; chave `catalogo.favorites.v1`; payload `{ version: 1, items }`; type guard sem biblioteca; ordem `savedAt` desc | guardar só ids e refazer fetch em `/favoritos` | `/favoritos` fica 100% client e sem chamada ao TMDB; dados podem envelhecer (nota muda). Refetch exigiria route handler para não expor o token e N chamadas | favoritos · README |
+| D31 | Hidratação: snapshot do servidor é vazio; `FavoritesBadge` fica oculto até montar (e quando o total é 0); coração começa vazio e vira após hidratar | cookie legível no servidor | O servidor não conhece o `localStorage`; o flash do badge é evitável, o do coração não. Cookie limitaria a 4 KB e foge do "neste navegador" | favoritos · README |
+| D32 | Sincronização entre abas pelo evento `storage`; `try/catch` em toda leitura/gravação com fallback em memória; payload inválido vira lista vazia e é sobrescrito | sem sincronização | Modo privado do Safari pode lançar exceção; dados corrompidos não quebram a tela | favoritos |
+
+## D. UI e Design System
+
+| id | Decisão | Alternativas | Trade-off | Onde |
+|---|---|---|---|---|
+| D33 | Tokens no `@theme` com nomes 1:1 com `tokens.json` (`--color-text-muted` → `text-text-muted`) e `--color-*: initial` | renomear (`text-ink-muted`, `bg-base`) | Redundante de ler, mas rastreável para `tokens.json` e compatível com o `check-tokens` sem mapeamento | setup-catalogo · README "Design System" |
+| D34 | Manter os dois contrastes herdados: `text-subtle` só em texto decorativo com `aria-hidden` (rótulo "Pôster"); placeholder de input em `text-muted` (como o próprio protótipo faz no `<helmet>` de `Main.dc.html`); `border-strong` na borda do botão outline, com texto (15,8:1) e anel de foco (10,4:1) carregando o affordance | subir `border-strong` para 3:1 (perto de `#636363`) | WCAG 1.4.11 exige 3:1 em contornos que identificam o componente; aqui o texto identifica. Corrigir mudaria a cara do botão | setup-catalogo, readme-entrega · README "Acessibilidade" |
+| D35 | Grid de cards: 2 colunas a 390 px (`minmax(160px)`), `auto-fill` no desktop; header e FilterBar com `flex-wrap`; detalhe empilha; elenco 2 colunas no mobile; paginação quebra linha | `minmax(220px)` do protótipo (1 coluna a 390 px) | Dois pôsteres de 169 px lado a lado aproveitam a tela; o protótipo não tem artboard mobile | listagem-filmes, detalhe-filme |
+| D36 | `EmptyState` único (ícone, título, descrição, ação opcional) no padrão do vazio de `Favoritos.dc.html`; usado em busca sem resultado, favoritos vazios, `error.tsx` e `not-found.tsx` | um componente por caso | Um padrão visual para todos os estados excepcionais | listagem-filmes, favoritos, detalhe-filme |
+| D37 | Estados por tela: skeleton de 8 cards como fallback do Suspense; skeleton do detalhe; FilterBar com select desabilitado enquanto gêneros carregam; `error.tsx` por segmento com "Tentar novamente" (`reset`); `not-found.tsx` no detalhe para id inválido ou inexistente | `loading.tsx` global | Suspense granular mantém h1 e barra visíveis; `loading.tsx` esconderia tudo | listagem-filmes, detalhe-filme |
+| D38 | `TrailerEmbed`: `<iframe>` de `youtube-nocookie.com` com `title`, `loading="lazy"`, `allowFullScreen`, `aspect-video`; seção omitida sem trailer | lite embed (thumbnail que carrega o player ao clicar) | Simples e sem JS extra; o iframe pesa, lite embed fica como melhoria futura | detalhe-filme · README "Melhorias futuras" |
+| D39 | "Voltar à listagem" usa `?from=` com os parâmetros da listagem validados pelo mesmo parser; sem `from`, vai para `/` | `router.back()` | Funciona em link direto; URL um pouco maior. É o segundo item da ordem de corte (D43) | detalhe-filme |
+| D40 | Botões como `Button`/`ButtonLink` em `components/ui/` com variantes `primary` (`bg-accent text-on-accent`) e `outline` (`border-border-strong bg-bg-base text-text-primary`), ambos `min-h-11 px-5 rounded-lg font-semibold` | classes repetidas em cada uso | Um lugar para as classes de botão; evita drift | setup-catalogo |
+
+## E. Processo
+
+| id | Decisão | Alternativas | Trade-off | Onde |
+|---|---|---|---|---|
+| D41 | Seis changes nesta ordem: `setup-catalogo` → `tmdb-client` → `listagem-filmes` → `favoritos` → `detalhe-filme` → `readme-entrega` (favoritos antes do detalhe) | cinco (fundindo setup + tmdb); detalhe antes de favoritos | Favoritos junto da listagem: o coração nasce com o card e o detalhe já chega com o botão pronto; no fim do dia 3, L2–L5 e L7 prontos. Seis changes custam seis ciclos de propose/apply/evidence/commit/finish | `.work/backlog.md` |
+| D42 | `apply.validation` com cinco comandos: tokens, lint, typecheck, test, build. Build e `next dev` com `CATALOGO_CACHE_COMPONENTS=1` são critério no `tasks.md` dos changes que tocam página (3, 4, 5) | só lint + build; dois builds em todo apply | Falha nomeada por comando; o segundo build só onde faz diferença, sem dobrar o tempo de todo apply | `.work/config.yaml` |
+| D43 | Ordem de corte se faltar prazo: busca multipágina (já fora), `?from=` no voltar, sincronização entre abas, skeleton do FilterBar, testes de componentes de UI (manter os de `lib/`), `next/image` → `<img>`. Nenhum requisito L2–L8 é cortável | — | Decidido antes para não decidir sob pressão | readme-entrega · README "O que ficou de fora" |
+
+## Pendências de verificação (viram tasks do `tmdb-client`)
+
+| Item | Como verificar | Se falhar |
+|---|---|---|
+| `translations` via `append_to_response` (D18) | Uma chamada real `/movie/603?append_to_response=credits,videos,translations&language=pt-BR` com o token | Segunda chamada com `language=en-US` quando `overview` vier vazio |
+| `include_video_language=pt,en,null` (D19) | Mesma chamada, conferir se vêm vídeos em `en` com `language=pt-BR` | Segunda chamada `/movie/{id}/videos?language=en-US` quando a lista vier vazia |
+| 422 acima da página 500 (D17) | `/discover/movie?page=501` | Nada muda: o clamp já protege |
+
+## Perguntas em aberto
+
+- Em que dia da contagem de 5 estamos (data de recebimento do PDF).
+- Plataforma do repositório remoto (GitHub, GitLab, etc.) para o `git_host` e o compartilhamento.

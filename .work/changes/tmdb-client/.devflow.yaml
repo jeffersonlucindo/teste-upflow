@@ -1,0 +1,12 @@
+schema: spec-driven
+created: 2026-10-07
+workItems:
+  provider: none
+  parents: [L1]
+  tasks: []
+phase: propose
+artifacts:
+  proposal: done
+  design: done
+  tasks: done
+  specs: done
