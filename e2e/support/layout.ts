@@ -130,11 +130,28 @@ export async function expectFocusRing(control: Locator) {
 }
 
 /**
- * Screenshot de página inteira em e2e/.output/layout/<projeto>/<nome>.png, com as fontes já
- * carregadas. É o que a revisão visual compara com as telas de .work/design/screens/.
+ * Screenshot de página inteira em e2e/.output/layout/<projeto>/<nome>.png, com as fontes e as
+ * imagens já carregadas. É o que a revisão visual compara com as telas de .work/design/screens/.
  */
 export async function captureLayout(page: Page, testInfo: TestInfo, name: string) {
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
+  // As imagens abaixo da dobra são lazy: sem passar por elas, sairiam vazias na página inteira.
+  const broken = await page.evaluate(async () => {
+    let failed = 0;
+    for (const image of Array.from(document.images)) {
+      image.scrollIntoView({ block: "center" });
+      if (!image.complete) {
+        await new Promise((resolve) => {
+          image.addEventListener("load", resolve, { once: true });
+          image.addEventListener("error", resolve, { once: true });
+        });
+      }
+      if (image.naturalWidth === 0) failed += 1;
+    }
+    window.scrollTo(0, 0);
+    return failed;
+  });
+  expect(broken, "imagens que não carregaram antes da captura").toBe(0);
   const path = `e2e/.output/layout/${testInfo.project.name}/${name}.png`;
   await page.screenshot({ path, fullPage: true });
   await testInfo.attach(name, { path, contentType: "image/png" });

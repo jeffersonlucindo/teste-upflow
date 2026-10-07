@@ -22,6 +22,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   reporter: [["list"], ["html", { outputFolder: "e2e/.output/report", open: "never" }]],
+  // As telas buscam no TMDB de verdade e a URL só muda quando a resposta chega: 5 s é pouco.
+  expect: { timeout: 15_000 },
   use: {
     baseURL,
     locale: "pt-BR",

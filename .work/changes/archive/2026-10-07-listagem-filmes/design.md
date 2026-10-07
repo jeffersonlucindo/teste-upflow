@@ -168,7 +168,7 @@ Fatos do Next 16.4 que o design assume e a task 1.1 confere nos docs instalados
    afeta os dados).
 4. **`page.tsx`: shell estático e dois `<Suspense>`** (D37, D27; pilar 1):
    ```tsx
-   export const metadata: Metadata = { title: "Filmes populares" };
+   export const metadata: Metadata = { title: { absolute: "Filmes populares · Catálogo." } }; // como no scaffold: o template do layout não vale para o mesmo segmento
    export default function HomePage({ searchParams }: PageProps<"/">) {
      return (
        <section className="flex flex-col gap-6">
@@ -248,7 +248,9 @@ Fatos do Next 16.4 que o design assume e a task 1.1 confere nos docs instalados
    - Modo busca (D14): os dois selects recebem `disabled={searchMode}` e
      `aria-describedby={hintId}`; o `<p id={hintId}>` com "Gênero e ordenação não se aplicam à busca
      por título (limitação da API)." entra no `form` (`basis-full`, `text-[13px] text-text-muted`)
-     só em modo busca. `disabled` da prop (fallback) desabilita os três controles.
+     só em modo busca. `disabled` da prop (fallback) desabilita os três controles. O texto do hint
+     reescreve a redação de D14 ("Não se aplica à busca por título (limitação da API)") porque um
+     único `<p>` descreve os dois selects; a task 9.1 atualiza a linha D14 (redação, não decisão).
    - Marcação: `<form role="search" action="/" method="get" aria-busy={isPending}>` — com `name` nos
      controles e `action="/"`, Enter sem JavaScript ainda chega em `/?q=…` (o parser normaliza o resto).
    - Classes (`components.md`): `form` `flex flex-wrap items-end gap-4`; label `flex flex-col gap-2
@@ -307,17 +309,19 @@ Fatos do Next 16.4 que o design assume e a task 1.1 confere nos docs instalados
 9. **`MovieCard` e `toMovieCardData`** (shared; D23, D35; `components.md` linha `MovieCard`):
    ```ts
    export interface MovieCardData {
-     id: number; title: string; posterUrl: string | null;
-     voteAverage: number; voteCount: number; releaseYear: number | null;
+     id: number; title: string;
+     posterPath: string | null; releaseDate: string | null; // origem (TMDB): o FavoriteButton do change favoritos monta o snapshot com eles
+     posterUrl: string | null; releaseYear: number | null;  // derivados para a UI do card
+     voteAverage: number; voteCount: number;
    }
    export interface MovieCardProps { movie: MovieCardData; from?: string }
-   export function toMovieCardData(movie: MovieSummary): MovieCardData; // posterUrl(movie.posterPath, POSTER_SIZE.card), releaseYear(movie.releaseDate)
+   export function toMovieCardData(movie: MovieSummary): MovieCardData; // copia posterPath e releaseDate; posterUrl(movie.posterPath, POSTER_SIZE.card); releaseYear(movie.releaseDate)
    export function MovieCard({ movie, from }: MovieCardProps): ReactNode;
    ```
    Marcação:
    ```tsx
    <article className="flex flex-col gap-3">
-     <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-surface-200">
+     <div className="relative aspect-[2/3] rounded-xl bg-surface-200"> {/* sem overflow-hidden; a imagem leva rounded-xl (Ajustes do apply, item 3) */}
        <Link href={href} aria-label={`Ver detalhes de ${movie.title}`} className="absolute inset-0 flex items-center justify-center rounded-xl">
          {movie.posterUrl
            ? <Image src={movie.posterUrl} alt="" fill sizes="(max-width: 639px) 50vw, 220px" className="object-cover" />
@@ -451,8 +455,9 @@ Fatos do Next 16.4 que o design assume e a task 1.1 confere nos docs instalados
       (`aria-disabled`), "Próxima" é link com `hrefFor(2)`; 5 de 5 → o inverso; 1 de 1 → nenhum link;
       texto "Página 3 de 5".
     - `src/components/movies/MovieCard.test.tsx` (cortável): meta nos quatro casos; placeholder
-      "Pôster" sem `posterUrl`; `href` com e sem `from`; `toMovieCardData` com `posterPath: null` e
-      `releaseDate: null`. Se `next/image` reclamar no jsdom, `vi.mock("next/image")` devolvendo `<img>`.
+      "Pôster" sem `posterUrl`; `href` com e sem `from`; `toMovieCardData` devolve os oito campos
+      (copia `posterPath`/`releaseDate`, inclusive `null`, e deriva `posterUrl`/`releaseYear`). Se
+      `next/image` reclamar no jsdom, `vi.mock("next/image")` devolvendo `<img>`.
     - `src/components/ui/EmptyState.test.tsx` (cortável): ação `href` vira link; `onClick` vira botão.
     `MovieResults` e `FilterBarLoader` não têm teste unitário (async RSC); são o grupo 8 das tasks.
 17. **Dois modos de `cacheComponents`** (D2, D42; critério no `tasks.md`): sem a flag, `npm run build`
@@ -463,7 +468,11 @@ Fatos do Next 16.4 que o design assume e a task 1.1 confere nos docs instalados
     código é o mesmo nos dois modos: sem `'use cache'`, sem `cacheLife`, cache só no `client.ts` (D20).
 18. **Registro** — `components.md` recebe no apply (regra do próprio arquivo): linha `ListingTransition`
     (client, `components/movies/`), `ErrorState` com pasta `components/ui/` e prop `title?`, tipo de
-    `icon` do `EmptyState`, `toMovieCardData` e `movieGridClassName`, `ul role="list"` no `MovieGrid`.
+    `icon` do `EmptyState`, `toMovieCardData` e `movieGridClassName`, `ul role="list"` no `MovieGrid`,
+    e na linha `MovieCard` o `MovieCardData` com os oito campos (`posterPath`/`releaseDate` de origem
+    ao lado de `posterUrl`/`releaseYear`). `decisoes.md`: a linha D14 recebe o texto final do hint
+    ("Gênero e ordenação não se aplicam à busca por título (limitação da API).", um só `<p>` ligado
+    aos dois selects por `aria-describedby`; reescrita de redação, não de decisão).
     `backlog.md`: L2–L5 `doing` no apply, `done` no finish. README: nada aqui; a lista para a seção
     "Decisões técnicas e trade-offs" está no último item de Riscos / Trade-offs.
 
@@ -504,3 +513,52 @@ Fatos do Next 16.4 que o design assume e a task 1.1 confere nos docs instalados
   (`FilterBar` lê a URL sozinho; fallback sem URL), D28 (`Pagination` RSC com `<Link>`), D35 (2 colunas
   a 390 px), D36 (`EmptyState` único com ícones nomeados), D37 (skeleton de 8, barra desabilitada,
   `error.tsx` por segmento), D42 (verificação nos dois modos).
+
+## Ajustes do apply (2026-10-07)
+Divergências entre este design e o que a implementação e a verificação no browser mostraram. O
+código segue o que está aqui; os trechos acima ficam como histórico da proposta.
+1. **`MovieResults` faz `await connection()`** depois de `parseListingParams(await searchParams)` e
+   antes de `fetchListing` (contraria a decisão 8 e o critério original da task 6.3, que diziam que
+   o `await searchParams` bastava). Motivo: com `CATALOGO_CACHE_COMPONENTS=1` o `next.config.ts` liga
+   também `partialPrefetching`, e nesse modo a URL (`params`/`searchParams`) é resolvida numa etapa
+   de prerender por link (`node_modules/next/dist/docs/01-app/02-guides/adopting-partial-prefetching.md`).
+   O `todayUtc()` de `fetchListing` (`new Date()`, D16) passava a ser alcançado nessa etapa e o
+   `next dev` com a flag reportava `blocking-prerender-current-time` em `/`. O `await connection()`
+   segura a listagem até uma requisição real, que é a intenção de D16 ("request-time") e a regra do
+   pilar 1; `src/lib/tmdb/` não foi alterado. Custo: o resultado da listagem não entra em prefetch
+   por link (não era usado). Build com a flag continua `◐` e sem fetch.
+2. **Selects do `FilterBar`**: `min-w-0 flex-1 basis-36 sm:flex-initial sm:basis-52` em vez de só
+   `basis-52`. Com `flex-wrap`, a quebra de linha é decidida pelo `flex-basis`: dois selects de
+   208 px mais o gap não cabem em 358 px e empilhariam a 390 px, contra o critério da task 8.6
+   ("selects lado a lado"). Com base de 144 px eles dividem a linha no celular; de `sm` em diante
+   valem os 208 px do protótipo.
+3. **Pôster do `MovieCard` sem `overflow-hidden`**: o contêiner cortava o anel de foco do `<Link>`
+   (`outline-offset: 2px` global), deixando o foco invisível no link do pôster. O contêiner fica
+   `relative aspect-[2/3] rounded-xl bg-surface-200` e a `next/image` recebe `rounded-xl object-cover`.
+4. **`error.tsx` no Next 16.4**: os docs instalados (`03-file-conventions/error.md`) passaram a
+   recomendar a prop `retry()` (refaz o fetch e re-renderiza o segmento); `reset()` continua
+   suportada. Mantido o contrato deste design (`ErrorStateProps { error, reset, title? }` com
+   `startTransition(() => { router.refresh(); reset(); })`), verificado no browser: recupera sem
+   recarregar a página. Trocar para `retry` é uma simplificação possível, registrada como pendência
+   porque muda o contrato que o `detalhe-filme` reutiliza.
+5. **Textos com plural**: "A lista tem N página(s)." e "N resultado(s) para …" saem com o plural
+   resolvido ("5 páginas", "1 resultado"), sem os parênteses.
+6. Aviso de desenvolvimento não tratado: o `next/image` sugere `loading="eager"` no primeiro pôster
+   (LCP). `priority` no card já estava nos não-objetivos; fica como melhoria.
+
+## Ajustes do QA (2026-10-07)
+Correções dos achados do code review, todas com teste que falha sem a correção.
+1. **Selects do `FilterBar` com valor otimista** (`useOptimistic`): eram controlados só pela URL,
+   que muda apenas quando a navegação termina; em rede lenta a escolha voltava a "Todos" até a
+   resposta chegar. Agora o select mostra a escolha durante a transição e duas escolhas seguidas se
+   somam. Coberto por `e2e/listagem-filmes.spec.ts › navegação pendente` (segura o payload RSC).
+2. **Campo de busca conferido a cada URL nova**: o efeito de sincronização dependia só de `q`. Uma
+   busca enviada e superada por outra navegação sem `q` (trocar gênero, paginar) deixava o texto no
+   campo, a URL sem busca e o Enter sem efeito. O efeito agora roda a cada URL nova, depois que a
+   transição assenta (`syncedUrlRef`). Reproduzido no browser antes da correção; coberto por teste
+   de unidade e E2E.
+3. **`role="status"` fora da região `aria-busy`** em `ListingTransitionRegion`: dentro dela o
+   anúncio "Atualizando resultados…" podia ser adiado ou suprimido por leitores de tela.
+4. **Testes ao lado** de `ListingTransition` (pendente/idle, status fora da região, fallback sem
+   provider) e de `ErrorState` (título, mensagem por ambiente, `router.refresh()` + `reset()`).
+
