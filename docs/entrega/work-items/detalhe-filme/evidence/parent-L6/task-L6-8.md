@@ -14,9 +14,9 @@ Os cinco comandos de `apply.validation` passaram, com o build sem `.env.local` e
 ## Arquivos impactados
 | Arquivo | Ação | Descrição |
 |---------|------|-----------|
-| `.work/changes/detalhe-filme/tasks.md` | alterado | Tasks marcadas `[x]` |
-| `.work/changes/detalhe-filme/.devflow.yaml` | alterado | Blocos `implementation` e `qa` |
-| `.work/changes/detalhe-filme/change.html` | alterado | HTML do change regenerado |
+| `.work/changes/archive/2026-10-07-detalhe-filme/tasks.md` | alterado | Tasks marcadas `[x]` |
+| `.work/changes/archive/2026-10-07-detalhe-filme/.devflow.yaml` | alterado | Blocos `implementation` e `qa` |
+| `.work/changes/archive/2026-10-07-detalhe-filme/change.html` | alterado | HTML do change regenerado |
 
 ## Decisões técnicas
 Pilar 7 (build verde sem token e sem rede) e D42 (dois modos de `cacheComponents`).

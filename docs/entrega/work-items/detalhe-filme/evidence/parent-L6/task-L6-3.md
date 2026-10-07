@@ -36,7 +36,7 @@ Decisões 6 a 11 do `design.md`; D18 (fallback de sinopse), D19 e D38 (trailer s
 ## Resultado
 O detalhe completo (`/movie/603`), a sinopse só em inglês, a sinopse ausente, o filme sem elenco e o skeleton têm a aparência abaixo. Os ids usados vêm do TMDB em 2026-10-07: sinopse pt-BR 603; só em inglês 20000 (aviso "…apenas em inglês.", `lang="en"`); só em espanhol 1786782 (`lang="es"`); sem sinopse 1767731; sem elenco 1789955.
 
-**QA** (`.work/changes/detalhe-filme/.devflow.yaml > qa`; `status: advisory-only`, `functional: pass`):
+**QA** (`.work/changes/archive/2026-10-07-detalhe-filme/.devflow.yaml > qa`; `status: advisory-only`, `functional: pass`):
 - E2E: spec `e2e/detalhe-filme.spec.ts` (17 testes por projeto); suíte inteira com 114 passed e 0 skipped (57 em `desktop`, 57 em `mobile`).
 - Layout: `pass`. Gates `expectNoHorizontalOverflow`, `expectTokenColors`, `expectMinHeight`, `expectFontVariable` e `expectFocusRing` verdes em 1280 e 390 px. Findings em aberto (advisory): o estado de erro do detalhe não tem teste E2E versionado (o fetch é do servidor; foi conferido à mão e está coberto por `ErrorState.test.tsx`) e a `key` por `member.id` do `CastList` duplicaria se o TMDB repetisse a mesma pessoa entre os 8 primeiros (caso real não confirmado). Três findings resolvidos em 2 iterações.
 

@@ -65,8 +65,8 @@ O requisito de detalhe do enunciado pede uma página própria em `/movie/[id]` c
 
 ## 📦 Entrega
 
-**Status:** Implementado e validado em 2026-10-07; PR e finalização pendentes. QA `advisory-only` (2 iterações, 3 findings resolvidos, 2 advisory em aberto, `functional: pass`, E2E 114 passed e 0 skipped, layout `pass`).
-**Change:** `.work/changes/detalhe-filme/`
+**Status:** Entregue em 2026-10-07 (PR #5 para `develop`). QA `advisory-only` (2 iterações, 3 findings resolvidos, 2 advisory em aberto, `functional: pass`, E2E 114 passed e 0 skipped, layout `pass`).
+**Change:** `.work/changes/archive/2026-10-07-detalhe-filme/` · spec sincronizada em `.work/specs/detalhe-filme/spec.md`
 
 **Evidências:**
 ### Requisito #L6 — Página de detalhe em /movie/[id]: sinopse (com fallback de idioma), nota, elenco principal e trailer quando houver

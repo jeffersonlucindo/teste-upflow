@@ -4,7 +4,7 @@ workItems:
   provider: none
   parents: [L6]
   tasks: []
-phase: commit
+phase: finish
 artifacts:
   proposal: done
   design: done
@@ -39,3 +39,14 @@ qa:
   updated_at: 2026-10-07T17:03:50Z
 commits:
   count: 7
+pr:
+  number: 5
+  url: https://github.com/jeffersonlucindo/desafio-up-flow/pull/5
+  target: develop
+  state: open
+  opened_at: 2026-10-07
+finish:
+  archived_at: 2026-10-07T17:20:36Z
+  archive: .work/changes/archive/2026-10-07-detalhe-filme/
+  specs_synced: [detalhe-filme]
+  merge: pending            # finalizado na propria branch, a pedido, antes do merge do PR 5

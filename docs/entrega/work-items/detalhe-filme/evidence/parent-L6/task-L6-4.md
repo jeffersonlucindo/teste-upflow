@@ -22,7 +22,7 @@ Decisões 3 e 4 do `design.md`; D21 (`not_found` vira `notFound()`, o resto vai 
 ## Resultado
 Uma chamada HTTP ao TMDB por render: com `logging.fetches` ligado temporariamente no `next dev`, `/movie/604` registra as duas chamadas de `getMovieDetail` (metadata e página) como uma ida ao TMDB e um acerto de cache; `/movie/abc` não registra nenhuma. A partir de um card da listagem, o detalhe abre com `?from=` e o botão volta preservando a busca e a página.
 
-**QA** (`.work/changes/detalhe-filme/.devflow.yaml > qa`; `status: advisory-only`, `functional: pass`):
+**QA** (`.work/changes/archive/2026-10-07-detalhe-filme/.devflow.yaml > qa`; `status: advisory-only`, `functional: pass`):
 - E2E: spec `e2e/detalhe-filme.spec.ts` (17 testes por projeto); suíte inteira com 114 passed e 0 skipped (57 em `desktop`, 57 em `mobile`).
 - Layout: `pass`. Gates `expectNoHorizontalOverflow`, `expectTokenColors`, `expectMinHeight`, `expectFontVariable` e `expectFocusRing` verdes em 1280 e 390 px. Findings em aberto (advisory): o estado de erro do detalhe não tem teste E2E versionado (o fetch é do servidor; foi conferido à mão e está coberto por `ErrorState.test.tsx`) e a `key` por `member.id` do `CastList` duplicaria se o TMDB repetisse a mesma pessoa entre os 8 primeiros (caso real não confirmado). Três findings resolvidos em 2 iterações.
 
