@@ -1,0 +1,52 @@
+schema: spec-driven
+created: 2026-10-07
+workItems:
+  provider: none
+  parents: [L8]
+  tasks: []
+phase: finish
+artifacts:
+  proposal: done
+  design: done
+  tasks: done
+  specs: none
+implementation:
+  status: completed
+  completed_tasks: 21
+  total_tasks: 22
+  current_task: ""
+  pending_delivery: ["5.1"]           # promoção develop → main e convites: dependem do merge do PR 6
+  validated: true
+  validation:
+    status: passed
+    last_run: 2026-10-07T19:32:17Z
+    failures: []
+    summary: "tokens:check, lint, typecheck, test (31 arquivos, 342 testes) e build verdes sem .env.local"
+    cache_components: "build com CATALOGO_CACHE_COMPONENTS=1 verde sem .env.local (/ e /movie/[id] parciais, /favoritos estática)"
+    e2e_regression: "npm run e2e: 114 passed (57 desktop, 57 mobile)"
+    clean_clone: "npm ci, npm run dev com as quatro URLs, build e check sem .env.local"
+  updated_at: 2026-10-07T19:32:17Z
+evidence:
+  parents: [L8]
+  tasks: [L8-1, L8-2, L8-3, L8-4, L8-5, L8-6]
+  published: false            # tracker: none; evidências em docs/entrega/work-items/readme-entrega/
+commits:
+  count: 2
+  refs: []
+  branch: feature/readme-entrega
+pr:
+  number: 6
+  url: https://github.com/jeffersonlucindo/desafio-up-flow/pull/6
+  target: develop
+  state: open
+  opened_at: 2026-10-07
+  linkedItems: [L8]
+finish:
+  archived_at: 2026-10-07T20:13:03Z
+  archive: .work/changes/archive/2026-10-07-readme-entrega/
+  specs_synced: []            # change sem specs
+  backlog: "L8 → done"
+  merge: pending            # finalizado na propria branch, a pedido, antes do merge do PR 6
+  warnings:
+    - "task 5.1 aberta: PR develop → main, conferência de origin/main e convites aos dois e-mails"
+    - "data do compartilhamento ainda não registrada em decisoes.md › Perguntas em aberto"

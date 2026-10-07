@@ -93,3 +93,4 @@
 
 - Em que dia da contagem de 5 estamos (data de recebimento do PDF).
 - ~~Plataforma do repositório remoto~~: resolvido em 2026-10-07, GitHub (`jeffersonlucindo/desafio-up-flow`, privado), com `main` + `develop` e features em `feature/<change>` (ver `.work/config.yaml > git`).
+  Compartilhamento com marcos.oliveira@upflow.me e mario.morais@upflow.me: pendente em 2026-10-07; acontece depois da promoção de `develop` para `main`, por convite em Settings › Collaborators (leitura). A data entra aqui quando os convites forem enviados.
