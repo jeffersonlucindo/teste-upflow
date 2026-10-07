@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -19,10 +19,7 @@ function isActivePath(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/** Ilha client do header: precisa do pathname para marcar a rota atual. */
-export function NavLink({ href, children }: NavLinkProps) {
-  const isActive = isActivePath(usePathname(), href);
-
+function NavLinkAnchor({ href, children, isActive }: NavLinkProps & { isActive: boolean }) {
   return (
     <Link
       href={href}
@@ -31,5 +28,31 @@ export function NavLink({ href, children }: NavLinkProps) {
     >
       {children}
     </Link>
+  );
+}
+
+function CurrentNavLink({ href, children }: NavLinkProps) {
+  return (
+    <NavLinkAnchor href={href} isActive={isActivePath(usePathname(), href)}>
+      {children}
+    </NavLinkAnchor>
+  );
+}
+
+/**
+ * Ilha client do header: precisa do pathname para marcar a rota atual. Numa rota com parâmetro
+ * dinâmico o pathname só existe na requisição, então o shell leva o link sem marca (o fallback).
+ */
+export function NavLink({ href, children }: NavLinkProps) {
+  return (
+    <Suspense
+      fallback={
+        <NavLinkAnchor href={href} isActive={false}>
+          {children}
+        </NavLinkAnchor>
+      }
+    >
+      <CurrentNavLink href={href}>{children}</CurrentNavLink>
+    </Suspense>
   );
 }
