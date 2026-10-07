@@ -133,4 +133,4 @@
 ## 10. Validação
 - [x] 10.1 Rodar comandos de validação existentes (comandos de config.yaml > apply.validation): `npm run tokens:check`, `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build` — o build sem `.env.local` e sem rede (pilar 7) [#L2] [#L3] [#L4] [#L5]
 - [x] 10.2 Rodar testes existentes: `npm run test` (NavLink, Button, os seis de `src/lib/tmdb/`, e os novos: `lib/listing/params`, `lib/format/rating`, `lib/format/releaseYear`, `ui/EmptyState`, `movies/MovieCard`, `movies/FilterBar`, `movies/Pagination`) e registrar a saída na evidência [#L2] [#L3] [#L4] [#L5]
-- [ ] 10.3 Conferir que a task 8.7 (build e `next dev` com a flag) foi registrada na evidência com o resumo do build; regenerar o HTML do change (`node .claude/devflow/tools/htmlgen.mjs listagem-filmes`) [#L2] [#L3] [#L4] [#L5]
+- [x] 10.3 Conferir que a task 8.7 (build e `next dev` com a flag) foi registrada na evidência com o resumo do build; regenerar o HTML do change (`node .claude/devflow/tools/htmlgen.mjs listagem-filmes`) [#L2] [#L3] [#L4] [#L5]
