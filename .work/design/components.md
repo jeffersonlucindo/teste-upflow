@@ -10,7 +10,7 @@
 
 ```
                     servidor                               │   client
-src/app/layout.tsx ── Header ──────────────────────────────┼── NavLink (usePathname)
+src/app/layout.tsx ── Header ──────────────────────────────┼── NavLink (usePathname sob Suspense próprio)
                                                            ├── FavoritesBadge (store)
 src/app/page.tsx ── h1 "Filmes populares"                  │
              ── <Suspense fallback=FilterBar vazio> ───────┼── FilterBar (useSearchParams, useRouter, useTransition)
@@ -21,12 +21,15 @@ src/app/page.tsx ── h1 "Filmes populares"                  │
                         ├─ Pagination (links)              │
                         └─ EmptyState (busca vazia)        │
 src/app/error.tsx ─────────────────────────────────────────┼── ErrorState (reset)
-src/app/movie/[id]/page.tsx ── BackLink                    │
+src/app/movie/[id]/page.tsx                                │
+             ── <Suspense fallback=BackLink href="/">      │
+             │     └─ BackLinkLoader: await searchParams; backHref(from) ── BackLink
              ── <Suspense fallback=DetailSkeleton>         │
-                   └─ MovieDetails: await params; getMovieDetail()
-                        ├─ MovieHeader ── RatingChip ──────┼── FavoriteButton full (store)
-                        ├─ Overview · CastList/CastCard · TrailerEmbed
+                   └─ MovieDetails: await params; parseMovieId(); getMovieDetail()
+                        └─ MovieHeader ── RatingChip ──────┼── FavoriteButton full (store)
+                             └─ children: Overview · CastList/CastCard · TrailerEmbed
 src/app/movie/[id]/not-found.tsx ── EmptyState             │
+src/app/movie/[id]/error.tsx ──────────────────────────────┼── ErrorState (reset)
 src/app/favoritos/page.tsx ── h1 + subtítulo ──────────────┼── FavoritesList (store) ── MovieGrid/MovieCard
 ```
 
@@ -39,7 +42,7 @@ o renderiza).
 | Componente | Pasta | Tela(s) | Tipo | Tokens e medidas | Props essenciais | Estados |
 |---|---|---|---|---|---|---|
 | `Header` | `components/layout/` | todas | RSC | `border-b border-border-subtle`; logo `font-display text-xl font-extrabold text-text-primary`, ponto `text-accent`; nav `max-w-[1200px] px-4 sm:px-10 py-4 flex flex-wrap justify-between gap-4` | — | — |
-| `NavLink` | `components/layout/` | todas | client | ativo `bg-surface-100 text-text-primary font-semibold`; inativo `text-text-muted hover:text-text-primary font-medium`; `min-h-11 px-4 rounded-lg inline-flex items-center gap-2` | `href`, `children` | ativo (`aria-current="page"`; `/` só exato, `/favoritos` por prefixo), inativo, foco |
+| `NavLink` | `components/layout/` | todas | client | ativo `bg-surface-100 text-text-primary font-semibold`; inativo `text-text-muted hover:text-text-primary font-medium`; `min-h-11 px-4 rounded-lg inline-flex items-center gap-2` | `href`, `children` | ativo (`aria-current="page"`; `/` só exato, `/favoritos` por prefixo), inativo, foco; a leitura de `usePathname` fica sob um `<Suspense>` interno cujo fallback é o link inativo (em rota com parâmetro dinâmico o pathname só existe na requisição e, com `cacheComponents`, o build falharia sem o boundary) |
 | `FavoritesBadge` | `components/favorites/` | todas (dentro do NavLink Favoritos) | client | `bg-border-subtle text-text-primary text-xs font-semibold rounded-full min-w-6 h-5 px-2 inline-flex items-center justify-center` | — | oculto até montar e quando o total é 0 (D31); `aria-label` "1 favorito" / "N favoritos" |
 | `FilterBar` | `components/movies/` | listagem | client | label `text-[13px] font-semibold text-text-muted flex flex-col gap-2`; input/select `h-11 px-4 rounded-lg border border-border-subtle bg-surface-100 text-text-primary`; placeholder `text-text-muted`; chevron `text-text-muted`; busca `flex-1 basis-80`, selects `min-w-0 flex-1 basis-36 sm:flex-initial sm:basis-52` (lado a lado a 390 px); `form role="search" flex flex-wrap gap-4 items-end` | `genres: Genre[]`, `disabled?` (fallback) | idle; pending (`aria-busy` e opacidade no grid; os selects mostram a escolha antes de a URL mudar, D26); modo busca (gênero e ordenação `disabled`, descritos por um hint único via `aria-describedby`, D14); fallback (select de gênero desabilitado "Carregando gêneros…") |
 | `ListingTransition` / `ListingTransitionRegion` | `components/movies/` | listagem | client | região `flex flex-col gap-6 transition-opacity`, `opacity-60` quando pendente | `children` | provider com `useTransition()` compartilhado pelo `FilterBar` (`useListingTransition()`, com transição local fora do provider); região: idle; pendente (`aria-busy="true"` e opacidade; o `role="status"` "Atualizando resultados…" é irmão da região, fora da subárvore ocupada) (D26) |
@@ -53,14 +56,15 @@ o renderiza).
 | `EmptyState` | `components/ui/` | listagem, favoritos, erro, not-found | shared | `rounded-xl border border-border-subtle bg-surface-100 py-16 px-6 text-center flex flex-col items-center gap-4`; ícone 32 px `text-text-muted`; título `text-base font-semibold text-text-primary`; descrição `text-text-muted`; ação `primary` | `icon: EmptyStateIcon` (`"search" \| "heart" \| "alert" \| "film"`), `title`, `description?`, `action?: { href \| onClick, label }` | busca vazia ("Nenhum filme encontrado para “x”", ação "Limpar busca"); favoritos vazio (textos do protótipo, ação "Explorar filmes"); erro ("Não foi possível carregar os filmes", ação "Tentar novamente"); not-found ("Filme não encontrado", ação "Voltar à listagem") (D36) |
 | `ErrorState` | `components/ui/` (renderizado por `src/app/error.tsx` e `src/app/movie/[id]/error.tsx`) | listagem, detalhe | client | usa `EmptyState` (`icon="alert"`) | `error`, `reset`, `title?` (padrão "Não foi possível carregar os filmes") | genérico; "Tentar novamente" faz `router.refresh()` + `reset()` em transição; em dev mostra `error.message` (em produção o Next redige mensagens do servidor, D21) |
 | `Button` / `ButtonLink` | `components/ui/` | todas | shared | `primary`: `bg-accent text-on-accent`; `outline`: `border border-border-strong bg-bg-base text-text-primary`; ambos `min-h-11 px-5 rounded-lg font-semibold inline-flex items-center gap-2` (D40) | `variant`, `href` (link) | foco `outline-focus-ring`; `aria-disabled` no link desabilitado |
-| `BackLink` | `components/movie-detail/` | detalhe | RSC | `text-text-muted font-medium min-h-11 inline-flex items-center gap-2 hover:text-accent self-start`; ícone seta 16 px | `href` (de `?from=` validado, senão `/`, D39) | — |
-| `MovieDetails` | `components/movie-detail/` | detalhe | RSC async | — | `params: Promise<{ id: string }>`, `from?` | valida id (inteiro positivo) antes do fetch; `not_found` → `notFound()` |
-| `MovieHeader` | `components/movie-detail/` | detalhe | RSC | layout `flex flex-wrap gap-10 items-start`; pôster `basis-60 max-w-[300px] aspect-[2/3] rounded-xl bg-surface-200`; coluna `basis-[560px] flex-1 min-w-0 flex flex-col gap-7`; h1 `font-display text-[44px] leading-[1.1] font-extrabold tracking-tight`; meta `text-text-muted`; linha de chips `flex flex-wrap gap-3 mt-3` | `movie: MovieDetail`, `from?` | sem pôster; sem duração ou sem gêneros (omite o pedaço e o separador "·") |
+| `BackLink` | `components/movie-detail/` | detalhe | RSC | `text-text-muted font-medium min-h-11 inline-flex items-center gap-2 hover:text-accent self-start`; ícone seta 16 px | `href` (de `?from=` validado, senão `/`, D39) | texto visível "Voltar à listagem", sem `aria-label`; com `href="/"` é o fallback do Suspense do `BackLinkLoader` |
+| `BackLinkLoader` | `components/movie-detail/` | detalhe | RSC async | — | `searchParams` (Promise da página) | faz `await searchParams` e renderiza `BackLink` com `backHref(from)` (`lib/listing/backHref.ts`: `parseListingParams` → `buildListingHref`); `from` ausente, vazio ou inválido → `/`; fallback do Suspense: `BackLink href="/"` |
+| `MovieDetails` | `components/movie-detail/` | detalhe | RSC async | — | `params: Promise<{ id: string }>` | id inválido (`parseMovieId`: só inteiro positivo em forma canônica) → `notFound()` sem fetch; `null` de `getMovieDetail` (404 do TMDB) → `notFound()`; demais erros sobem ao `error.tsx` do segmento |
+| `MovieHeader` | `components/movie-detail/` | detalhe | RSC | layout `flex flex-wrap gap-10 items-start`; pôster `basis-60 max-w-[300px] aspect-[2/3] rounded-xl bg-surface-200`; coluna `basis-[560px] flex-1 min-w-0 flex flex-col gap-7`; h1 `font-display text-4xl sm:text-[44px] leading-[1.1] font-extrabold tracking-tight break-words`; meta `text-text-muted`; linha de chips `flex flex-wrap gap-3 mt-3` | `movie: MovieDetail`, `children?` (seções na coluna da direita, abaixo do título) | pôster `w500` com `preload` e `alt=""`; sem pôster (placeholder "Pôster" `aria-hidden`); sem data, duração ou gêneros (`formatMovieMeta` omite o pedaço e o separador "·"; sem nenhum, a linha some) |
 | `RatingChip` | `components/movie-detail/` | detalhe | RSC | `min-h-11 px-4 rounded-lg bg-surface-200 text-text-primary font-semibold inline-flex items-center` | `voteAverage`, `voteCount` | "Nota 7,2" (vírgula pt-BR, 1 casa); `voteCount === 0` → "Sem nota" |
-| `Overview` | `components/movie-detail/` | detalhe | RSC | h2 `font-display text-xl font-bold`; p `leading-relaxed text-text-secondary max-w-[720px]`; aviso `text-[13px] text-text-muted` | `overview: { text, language } \| null` | pt-BR; outro idioma (aviso "Sinopse disponível apenas em inglês"); ausente ("Sinopse não disponível.") (D18) |
-| `CastList` / `CastCard` | `components/movie-detail/` | detalhe | RSC | grid `grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4`; foto `aspect-square rounded-xl bg-surface-200`; nome `font-semibold text-text-primary`; personagem `text-[13px] text-text-muted`; `figure`/`figcaption` | `cast: CastMember[]` (até 8, ordenados por `order`) | sem foto (placeholder); lista vazia (seção inteira omitida) |
+| `Overview` | `components/movie-detail/` | detalhe | RSC | h2 `font-display text-xl font-bold`; p `leading-relaxed text-text-secondary max-w-[720px]`; aviso `text-[13px] text-text-muted` | `overview: { text, language } \| null` | pt-BR; outro idioma (aviso "Sinopse disponível apenas em <idioma>." **antes** do texto e `lang` no `p` do texto; idioma sem nome no CLDR → "…apenas em outro idioma."); ausente ("Sinopse não disponível.", seção mantida) (D18) |
+| `CastList` / `CastCard` | `components/movie-detail/` | detalhe | RSC | grid `grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4`; foto `aspect-square rounded-xl bg-surface-200`; nome `font-semibold text-text-primary`; personagem `text-[13px] text-text-muted`; `figure`/`figcaption` | `cast: CastMember[]` (até 8, ordenados por `order`) | `ul role="list"`; foto `w185` com `alt=""`; sem foto (placeholder "Foto" `aria-hidden`); `character` vazio omitido; lista vazia (seção inteira omitida) |
 | `TrailerEmbed` | `components/movie-detail/` | detalhe | RSC | `aspect-video max-w-[800px] rounded-xl border border-border-subtle bg-surface-100 overflow-hidden`; iframe `youtube-nocookie.com/embed/{key}` com `title="Trailer: {name}"`, `loading="lazy"`, `allowFullScreen` (D38) | `trailer: { key, name } \| null` | `null` → seção omitida |
-| `DetailSkeleton` | `components/movie-detail/` | detalhe | shared | mesmas superfícies do skeleton do grid | — | fallback do Suspense do detalhe |
+| `DetailSkeleton` | `components/movie-detail/` | detalhe | shared | mesmas superfícies do skeleton do grid; mesmas caixas do `MovieHeader` e a grade do elenco (`castGridClassName`) | — | fallback do Suspense do detalhe; `role="status"` com "Carregando filme" (`sr-only`) |
 | `FavoritesList` | `components/favorites/` | favoritos | client | — | — | não montado (nada, enquanto `hydrated` de `useFavorites()` é `false`); vazio (`EmptyState`); com itens (`FavoriteSnapshot` = `{ id, title, posterPath, voteAverage, voteCount, releaseDate, savedAt }` em `savedAt` desc, D30) via `MovieGrid` e `toMovieCardData` |
 
 ## Páginas e arquivos de rota
@@ -70,7 +74,7 @@ o renderiza).
 | `src/app/layout.tsx` | RSC | `html lang="pt-BR"`, fontes (`--font-heading`, `--font-body`, D11), `Header`, `main max-w-[1200px] mx-auto w-full px-4 sm:px-10 pt-8 pb-14`; `metadata` com template "%s · Catálogo." |
 | `src/app/page.tsx` | RSC | h1 + dois Suspense (D37); `metadata.title` "Filmes populares" |
 | `src/app/error.tsx` | client | `ErrorState` |
-| `src/app/movie/[id]/page.tsx` | RSC | `BackLink` + Suspense com `MovieDetails`; `generateMetadata` com título do filme (mesmo fetch cacheado, sem chamada extra) |
+| `src/app/movie/[id]/page.tsx` | RSC | dois Suspense irmãos (`BackLinkLoader` com fallback `BackLink href="/"`; `MovieDetails` com fallback `DetailSkeleton`), sem `await` no corpo; `generateMetadata` com título do filme (mesmo fetch memoizado) e fallbacks "Filme não encontrado" (id inválido ou inexistente) e "Filme" (erro) |
 | `src/app/movie/[id]/not-found.tsx` | RSC | `EmptyState` "Filme não encontrado" |
 | `src/app/movie/[id]/error.tsx` | client | `ErrorState` |
 | `src/app/favoritos/page.tsx` | RSC estático | h1 "Meus favoritos", p "Os filmes salvos ficam neste navegador." `text-text-muted`, `FavoritesList` |

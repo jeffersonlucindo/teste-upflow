@@ -10,12 +10,13 @@ listagem em `/` (`src/lib/listing/`, `src/lib/format/`, `src/components/movies/`
 `src/components/ui/{EmptyState,ErrorState}.tsx`, `src/app/error.tsx`) e os favoritos
 (`src/lib/favorites/`, `src/components/favorites/`). Não existem `src/app/movie/`,
 `src/components/movie-detail/`, `src/lib/format/{runtime,languageName,movieMeta}.ts`,
-`src/lib/listing/backHref.ts` nem `src/lib/tmdb/parseMovieId.ts`. Nenhum arquivo existente de
-`src/` é alterado por este change.
+`src/lib/listing/backHref.ts` nem `src/lib/tmdb/parseMovieId.ts`. Um único arquivo existente de
+`src/` é alterado por este change: `src/components/layout/NavLink.tsx` (ajuste do apply, ver
+"Ajustes do apply").
 
 Contratos consumidos (dos `design.md` de `tmdb-client`, `listagem-filmes` e `favoritos`, sem reabrir):
 - `src/lib/tmdb/client.ts` (`server-only`): `getMovieDetail(id: number): Promise<MovieDetail | null>`
-  — `GET /movie/{id}?append_to_response=credits,videos,translations&include_video_language=pt,en,null`,
+  — `GET /movie/{id}?append_to_response=credits,videos,translations&include_video_language=pt-BR,pt,en,null`,
   `cache: "force-cache"` + `revalidate: 3600` (D20); `TmdbError` `not_found` é capturada dentro
   dela e vira `null`; os demais `kind` (`config`, `unauthorized`, `rate_limited`, `unavailable`)
   sobem (D21). A mesma chamada em `generateMetadata` e em `MovieDetails` cai na memoização de
@@ -203,9 +204,13 @@ Fatos do Next 16.4 que o design assume e a task 1.1 confere nos docs instalados
    export async function generateMetadata({ params }: PageProps<"/movie/[id]">): Promise<Metadata> {
      const { id } = await params;
      const movieId = parseMovieId(id);
-     if (movieId === null) return { title: "Filme não encontrado" };
-     const movie = await getMovieDetail(movieId).catch(() => null);
-     return { title: movie?.title ?? "Filme" };
+     if (movieId === null) return { title: NOT_FOUND_TITLE };          // "Filme não encontrado"
+     try {
+       const movie = await getMovieDetail(movieId);
+       return { title: movie?.title ?? NOT_FOUND_TITLE };              // null = 404 do TMDB
+     } catch {
+       return { title: "Filme" };
+     }
    }
 
    export default function MoviePage({ params, searchParams }: PageProps<"/movie/[id]">) {
@@ -233,8 +238,9 @@ Fatos do Next 16.4 que o design assume e a task 1.1 confere nos docs instalados
    (uma chamada HTTP por render, contrato do `tmdb-client`); `notFound()` **não** é chamado aqui (é o
    `MovieDetails` quem decide) e qualquer erro é engolido com `.catch(() => null)` para que a
    metadata nunca seja a origem do erro — o `MovieDetails` lança o mesmo erro e o `error.tsx` o
-   mostra. Fallbacks de título: id inválido → "Filme não encontrado" (coerente com a UI que o
-   `MovieDetails` vai pedir); fetch falhou → "Filme". Com a flag ligada, `await params` em
+   mostra. Fallbacks de título: id inválido **ou filme inexistente (`null`)** → "Filme não encontrado"
+   (coerente com a UI que o `MovieDetails` vai pedir e com o critério da task 6.2); fetch falhou →
+   "Filme" (ajuste do apply: a forma `.catch(() => null)` juntava `null` e erro em "Filme"). Com a flag ligada, `await params` em
    `generateMetadata` torna a metadata dinâmica e transmitida por streaming (não entra no shell); a
    task 1.1 confere nos docs instalados que isso não dispara o insight de blocking-route e a task
    6.6 confirma no `next dev`. Alternativas descartadas: `loading.tsx` do segmento (esconderia o
@@ -594,9 +600,69 @@ Fatos do Next 16.4 que o design assume e a task 1.1 confere nos docs instalados
     é consequência, não revisão). README: nada aqui; a lista para a seção "Decisões técnicas e
     trade-offs" está no último item de Riscos / Trade-offs.
 
+## Ajustes do apply (2026-10-07)
+Divergências entre este design e o que o código real e a verificação exigiram; nenhuma decisão de
+`decisoes.md` é reaberta.
+- **`NavLink` ganhou um `<Suspense>` interno** (`src/components/layout/NavLink.tsx`, do
+  `setup-catalogo`). `/movie/[id]` é a primeira rota com parâmetro dinâmico sem
+  `generateStaticParams`: com `cacheComponents`, o pathname é dado de requisição e `usePathname()`
+  suspende no pré-render do shell; sem boundary o `CATALOGO_CACHE_COMPONENTS=1 npm run build` falha
+  com `blocking-prerender-client-hook` (docs instalados, `use-pathname.md` › Cache Components). O
+  `NavLink` passou a ler o pathname num componente interno sob `<Suspense>`, com o link inativo
+  como fallback — que no detalhe é também o estado final (nem "Explorar" nem "Favoritos" ficam
+  ativos em `/movie/…`), então não há troca visível. Em `/` e `/favoritos` o pathname resolve no
+  pré-render e o fallback não aparece. Props, classes e testes do `NavLink` não mudam; a ilha
+  continua sendo a mesma do pilar 1. Era a suposição "nenhum arquivo existente de `src/` é
+  alterado" que estava errada, e é exatamente o que a verificação de D42 existe para pegar.
+- **Título da aba para filme inexistente**: `generateMetadata` devolve "Filme não encontrado"
+  também quando `getMovieDetail` devolve `null` (decisão 2, já corrigida acima); "Filme" fica só
+  para erro.
+- **Status HTTP do not-found é 200 nos dois modos**, inclusive em `next start` sem a flag
+  (o design esperava 404 sem a flag): o `notFound()` é chamado dentro do `<Suspense>` do
+  `MovieDetails`, depois de o streaming começar; o Next mantém 200 e injeta
+  `<meta name="robots" content="noindex">` (docs instalados, `not-found.md` › "Calling notFound()
+  after streaming has started"). Medido em 2026-10-07 com `curl` em `/movie/abc`, `/movie/0603` e
+  `/movie/999999999`: `next dev` e `next start`, com e sem `CATALOGO_CACHE_COMPONENTS=1` → 200 +
+  `noindex` nos quatro; o mesmo com user-agent de bot (`Twitterbot`).
+- **Testes sem `vi.mock("next/image")`**: o `MovieCard.test.tsx` real não mocka o `next/image`
+  (ele renderiza um `<img>` no jsdom); `MovieHeader.test.tsx` e `CastList.test.tsx` seguem o código
+  real e verificam `alt`, `sizes` e a URL `w500`/`w185` dentro do `src`.
+- **`error.tsx` tipado como o da raiz**: `({ error, reset }: Pick<ErrorStateProps, "error" |
+  "reset">)`, molde de `src/app/error.tsx`, em vez do `props` espalhado da decisão 12.
+- **`castGridClassName`** exportada por `CastList.tsx` e usada pelo `DetailSkeleton`, como o
+  `movieGridClassName` do `MovieGrid`/`MovieGridSkeleton` (a decisão 11 dizia "nas mesmas colunas
+  do elenco" sem dizer como).
+- **Símbolo no resumo do build com a flag**: `◐ /movie/[id]` (Partial Prerender, shell de fallback);
+  sem a flag, `ƒ /movie/[id]`.
+- **Ids usados na verificação (TMDB em 2026-10-07)**: sinopse pt-BR → 603; só em inglês → 20000
+  (aviso "…apenas em inglês.", `lang="en"`); só em espanhol → 1786782 ("…apenas em espanhol.",
+  `lang="es"`); sem sinopse em nenhum idioma → 1767731 ("Sinopse não disponível."); sem trailer →
+  1767731 e 1786782 (sem vídeos) e 1760851 (um vídeo que não é `Trailer`); sem elenco → 1789955
+  (só a seção "Sinopse"). Os ids recentes podem ganhar dados no TMDB com o tempo.
+- **Anel de foco no iframe do trailer**: "Voltar à listagem" e o botão de favorito mostram o anel
+  `focus-ring`; o `iframe` recebe o foco na ordem certa, mas o navegador não desenha `outline` em
+  `iframe` (o foco passa para o documento do player). Não mitigado.
+- **Uma chamada por render**: com `logging.fetches` ligado temporariamente no `next dev`,
+  `/movie/604` registra as duas chamadas de `getMovieDetail` (metadata e página) como uma ida ao
+  TMDB e um acerto de cache; `/movie/abc` não registra nenhuma.
+- **`preload` no lugar de `priority`** (achado do code review no QA): os docs instalados marcam
+  `priority` do `next/image` como deprecada desde o Next 16 em favor de `preload` (`image.md`). O
+  pôster do `MovieHeader` usa `preload`; onde este design e o `tasks.md` dizem "`priority`", leia-se
+  `preload` (mesmo efeito: `<link rel="preload">` no `head`, é a imagem LCP).
+- **Duas tags `<meta name="robots" content="noindex">` no not-found** (achado do E2E): nenhuma vem de
+  `src/` (`grep -rn "robots" src/` é vazio); é o Next que as injeta quando o `notFound()` acontece
+  durante o streaming. Inofensivo; o spec E2E aceita a duplicata.
+- **Skeleton e erro no QA** (achado da revisão de layout): o spec E2E ganhou o teste do shell sem
+  JavaScript (o navegador não troca os fallbacks, então o `DetailSkeleton` fica na tela para os
+  gates e para o screenshot `detalhe-skeleton`). Sem a flag o `BackLinkLoader` resolve antes do
+  primeiro envio, e o shell já traz o href final; com a flag traz `/`. O estado de erro foi
+  conferido à mão com `TMDB_API_READ_TOKEN=` vazio sobre o build de produção: `error.tsx` com
+  "Não foi possível carregar o filme", "Tente novamente em instantes.", botão de 44 px, header
+  visível, título da aba "Filme" (screenshots `detalhe-erro`); não há teste E2E versionado para ele.
+
 ## Riscos / Trade-offs
-- Status HTTP do not-found pode ser 200 quando o `notFound()` acontece depois de o shell sair (com a
-  flag ligada, sempre; sem a flag, dependendo do momento do flush) → a UI de not-found e o `noindex`
+- Status HTTP do not-found é 200 quando o `notFound()` acontece depois de o streaming começar (medido:
+  200 + `noindex` com e sem a flag, ver "Ajustes do apply") → a UI de not-found e o `noindex`
   são o comportamento documentado do streaming; o critério do backlog é a UI; registrado na task
   6.2 e no README. Garantir 404 exigiria `await params` fora do Suspense, o que quebra a flag.
 - `generateMetadata` dinâmica com a flag ligada → metadata transmitida por streaming; se os docs
