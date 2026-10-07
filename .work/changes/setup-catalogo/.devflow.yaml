@@ -1,0 +1,31 @@
+schema: spec-driven
+created: 2026-10-07
+workItems:
+  provider: none
+  parents: [L1, L8]
+  tasks: []
+phase: commit
+artifacts:
+  proposal: done
+  design: done
+  tasks: done
+  specs: done
+implementation:
+  status: completed
+  completed_tasks: 24
+  total_tasks: 24
+  current_task: ""
+  validated: true
+  validation:
+    status: passed
+    last_run: 2026-10-07T08:47:33Z
+    failures: []
+  updated_at: 2026-10-07T08:47:33Z
+evidence:
+  parents: [L1, L8]
+  tasks: [L1-1, L1-2, L1-3, L1-4, L1-5, L1-6, L8-1]
+  published: false
+commits:
+  count: 6
+  refs: []
+  updated_at: 2026-10-07T09:03:52Z
