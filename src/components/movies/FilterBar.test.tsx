@@ -128,6 +128,24 @@ describe("FilterBar: busca por título", () => {
     expect(replace).not.toHaveBeenCalled();
   });
 
+  it("limpa o campo quando a busca enviada é superada por outra navegação", () => {
+    const { busca, rerender } = renderAt("");
+
+    type(busca, "mat");
+    vi.advanceTimersByTime(SEARCH_DEBOUNCE_MS);
+    expect(replace).toHaveBeenCalledTimes(1);
+
+    // A busca não chegou a virar URL: outra navegação, também sem q, tomou o lugar.
+    mockUrl("genre=28");
+    rerender(<FilterBar genres={GENRES} />);
+    expect(busca).toHaveValue("");
+
+    // O campo voltou a valer: a mesma busca pode ser enviada de novo.
+    type(busca, "mat");
+    fireEvent.submit(screen.getByRole("search"));
+    expect(replace).toHaveBeenCalledTimes(2);
+  });
+
   it("não sobrescreve o que foi digitado quando a URL da própria busca chega", () => {
     const { busca, rerender } = renderAt("");
 

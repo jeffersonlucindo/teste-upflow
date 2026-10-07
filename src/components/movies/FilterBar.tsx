@@ -3,6 +3,7 @@
 import {
   useEffect,
   useId,
+  useOptimistic,
   useRef,
   type ChangeEvent,
   type ComponentProps,
@@ -50,27 +51,39 @@ export function FilterBar({ genres, disabled = false }: FilterBarProps) {
 }
 
 function LiveFilterBar({ genres }: { genres: Genre[] }) {
-  const current = parseListingParams(useSearchParams());
+  const searchParams = useSearchParams();
+  const url = searchParams.toString();
+  const current = parseListingParams(searchParams);
   const router = useRouter();
   const { isPending, startTransition } = useListingTransition();
   const hintId = useId();
+  // A URL só muda quando a navegação termina; até lá os selects mostram o que foi escolhido.
+  const [shown, showOptimistic] = useOptimistic(current);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   // Última busca que este componente pôs na URL ou leu dela.
   const committedRef = useRef(current.query);
+  // Última URL com a qual o campo foi conferido.
+  const syncedUrlRef = useRef(url);
 
   useEffect(() => () => clearTimeout(timerRef.current), []);
 
-  // A URL mudou por fora (voltar, avançar, link): o campo acompanha. Escrever no DOM, e não em
-  // estado, preserva o que foi digitado entre o envio de uma busca e a chegada da nova URL.
+  // A URL mudou por fora (voltar, avançar, link) ou uma busca enviada foi superada por outra
+  // navegação: o campo acompanha a URL. A conferência acontece a cada URL nova, depois que a
+  // navegação daqui assenta, e não só quando `q` muda: a busca superada deixa `q` como estava.
+  // Escrever no DOM, e não em estado, preserva o que foi digitado entre o envio de uma busca e
+  // a chegada da nova URL.
   useEffect(() => {
+    if (isPending || url === syncedUrlRef.current) return;
+
+    syncedUrlRef.current = url;
     if (current.query === committedRef.current) return;
 
     clearTimeout(timerRef.current);
     committedRef.current = current.query;
     if (inputRef.current) inputRef.current.value = current.query ?? "";
-  }, [current.query]);
+  }, [url, current.query, isPending]);
 
   function commitQuery(value: string) {
     const query = value.trim() || null;
@@ -97,14 +110,18 @@ function LiveFilterBar({ genres }: { genres: Genre[] }) {
 
   // Filtro novo sempre volta à primeira página.
   function pushFilter(change: Partial<ListingQuery>) {
-    const href = buildListingHref({ ...current, ...change, page: 1 });
-    startTransition(() => router.push(href));
+    // Parte do que está na tela: duas escolhas seguidas se somam antes de a primeira chegar.
+    const next = { ...shown, ...change, page: 1 };
+    startTransition(() => {
+      showOptimistic(next);
+      router.push(buildListingHref(next));
+    });
   }
 
   return (
     <FilterBarFields
       genres={genres}
-      current={current}
+      current={shown}
       busy={isPending}
       hintId={hintId}
       inputRef={inputRef}

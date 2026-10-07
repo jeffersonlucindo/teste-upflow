@@ -32,15 +32,18 @@ export function ListingTransitionRegion({ children }: { children: ReactNode }) {
   const { isPending } = useListingTransition();
 
   return (
-    <div
-      aria-busy={isPending}
-      className={`flex flex-col gap-6 transition-opacity${isPending ? " opacity-60" : ""}`}
-    >
+    <>
+      {/* Fora da região: anúncio dentro de uma subárvore aria-busy pode ser adiado ou suprimido. */}
       <p role="status" className="sr-only">
         {isPending ? "Atualizando resultados…" : ""}
       </p>
-      {children}
-    </div>
+      <div
+        aria-busy={isPending}
+        className={`flex flex-col gap-6 transition-opacity${isPending ? " opacity-60" : ""}`}
+      >
+        {children}
+      </div>
+    </>
   );
 }
 
