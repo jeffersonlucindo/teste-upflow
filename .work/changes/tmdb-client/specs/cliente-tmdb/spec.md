@@ -139,7 +139,7 @@ Placement: `src/lib/tmdb/mappers.ts` (`toGenres`, `toMovieSummary`, `toListingRe
 
 #### Cenário: Base do snapshot de favoritos
 - QUANDO um `MovieSummary` ou um `MovieDetail` é produzido
-- ENTÃO ambos expõem `id`, `title`, `posterPath`, `voteAverage` e `releaseDate` com os mesmos tipos
+- ENTÃO ambos expõem `id`, `title`, `posterPath`, `voteAverage`, `voteCount` e `releaseDate` com os mesmos tipos
 - E o `FavoriteButton` pode receber qualquer um dos dois sem adaptador
 
 ### Requisito: Sinopse com fallback de idioma
@@ -218,7 +218,7 @@ Placement: `scripts/tmdb-probe.mjs`; registro em `.work/changes/tmdb-client/desi
 
 #### Cenário: Sonda com token
 - QUANDO `node --env-file=.env.local scripts/tmdb-probe.mjs` roda com token válido
-- ENTÃO imprime três blocos: detalhe de `603` com `append_to_response` (status, `overview`, translations, vídeos), a mesma chamada sem `include_video_language` (diferença de vídeos) e `/discover/movie?page=501` (status e `status_message`)
+- ENTÃO imprime três blocos: detalhe de `603` com `append_to_response` (status, `overview`, translations, vídeos com idioma e país), a mesma chamada sem `include_video_language` (diferença de vídeos) e `/discover/movie?page=501` (status e `status_message`)
 - E sai com código 0 sem imprimir o token
 
 #### Cenário: Sonda sem token
@@ -236,8 +236,9 @@ Placement: `scripts/tmdb-probe.mjs`; registro em `.work/changes/tmdb-client/desi
 - E injeta o resultado como tradução `en-US` antes de `pickOverview`
 
 #### Cenário: Vídeos em inglês com language=pt-BR
-- QUANDO a chamada com `include_video_language=pt,en,null` devolve vídeos `en` (ou eles já vêm sem o parâmetro)
-- ENTÃO nada muda no código e D19 registra o observado
+- QUANDO a chamada com `include_video_language=pt-BR,pt,en,null` devolve vídeos `en` junto com os pt-BR e os pt-PT
+- ENTÃO `getMovieDetail` continua com uma única chamada e D19 registra o observado
+- E o valor do parâmetro é `pt-BR,pt,en,null`, não `pt,en,null`: verificado em 2026-10-07 que `pt` sozinho casa só com pt-PT e deixa os vídeos pt-BR de fora
 
 #### Cenário: Vídeos ausentes (fallback)
 - QUANDO `videos.results` vem vazio para `pt-BR` e o parâmetro não tem efeito
