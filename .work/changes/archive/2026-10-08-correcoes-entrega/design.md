@@ -162,7 +162,7 @@
     sobre o que é versionado. `.work/design/components.md`: `ListingTitle`, `PaginationPending`,
     `EmptyState.headingLevel`, not-found da raiz. `.work/design/README.md:100-101` e
     `eslint.config.mjs` (comentário): sem citar pasta ou ferramenta que não é entregue.
-15. **Referências a `.claude/`** — nos arquivos listados em `tasks.md` 8.3, a menção ao caminho
+15. **Referências ao ferramental local** — nos arquivos listados em `tasks.md` 8.3, a menção ao caminho
     é trocada por "ferramental local, não versionado" (ou removida quando a frase só existia por
     causa dela). O sentido histórico do registro é mantido; nenhum resultado de evidência muda.
     `.work/prompts/explore-inicial.md` sai do repositório: é um roteiro de sessão, não uma
@@ -203,7 +203,7 @@
 - **Decisão 9 (`h1`).** Como `EmptyState` mantém as mesmas classes nos dois níveis, o `h1` de "Página não encontrada" usa a fonte do corpo, e o E2E não confere `--font-heading` nele.
 - **E2E.** O teste "gênero sem resultado mostra Limpar filtros" de `listagem-filmes.spec.ts` foi removido: com a decisão 2, `/?genre=999999` deixou de produzir o estado vazio, que agora só apareceria com um gênero real sem filmes. O estado "Limpar filtros" continua no código e sem cobertura de ponta a ponta. O cenário do gênero desconhecido está em `correcoes-entrega.spec.ts`. Em `detalhe-filme.spec.ts`, os ids inválidos esperam 404 e a tela da raiz, e o filme inexistente confere 200 e `h1` único. O teste da corrida foi quebrado de propósito (sem o cancelamento do timer) e ficou vermelho; o código foi restaurado.
 - **Decisão 11 (`engines`).** `npm install --package-lock-only` acrescentou entradas opcionais não relacionadas (`@emnapi`); foi descartado e o `package-lock.json` recebeu só a mudança do bloco `engines` da raiz, à mão.
-- **Registros (8.3 e 8.4).** As linhas `node .claude/devflow/tools/htmlgen.mjs <change>` viraram "(com o ferramental local, não versionado)". O comentário de `eslint.config.mjs` perdeu a menção ao nome do fluxo. Ao arquivar o `setup-catalogo`, a spec `projeto-base` foi copiada (idêntica) para `.work/specs/projeto-base/`, porque ainda não estava sincronizada.
+- **Registros (8.3 e 8.4).** As linhas com o comando do gerador de HTML viraram "(com o ferramental local, não versionado)". O comentário de `eslint.config.mjs` perdeu a menção ao nome do fluxo. Ao arquivar o `setup-catalogo`, a spec `projeto-base` foi copiada (idêntica) para `.work/specs/projeto-base/`, porque ainda não estava sincronizada.
 - **README.** O texto de "Dois contrastes" virou "Quatro contrastes" com os quatro pares da tabela de "Acessibilidade". No checklist de teclado, em vez de reobservar as quatro telas à mão, entrou a nota de que o primeiro Tab foca o skip-link, conferida pelo E2E.
 - **Decisão 8 (`lang` da sinopse).** O aviso segue `fallback`, mas o atributo `lang` do parágrafo segue o idioma do texto contra o do documento: sinopse em qualquer idioma diferente de `pt` leva `lang`, mesmo sem aviso (por exemplo `TMDB_LANGUAGE=es-ES` com a sinopse em espanhol dentro de `<html lang="pt-BR">`).
 - **QA, iteração 1.** O ponto de `PaginationPending` saiu do fluxo (posicionamento absoluto na folga do `px-5`, com o link `relative`): o rótulo fica centrado e a largura do botão não muda, com ou sem indicador. A escolha do estado vazio da listagem virou a função pura `resolveEmptyState` (`src/lib/listing/emptyState.ts`), usada por `MovieResults` e testada.

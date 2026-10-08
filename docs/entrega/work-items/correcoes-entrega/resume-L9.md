@@ -71,7 +71,7 @@ Cada defeito reproduzido por teste que falha antes e passa depois; nenhum requis
 
 ## 📦 Entrega
 
-**Status:** Finalizado em 2026-10-08. QA `passed` (2 iterações, 14 findings resolvidos, nenhum em aberto, `functional: pass` com 409 testes em 35 arquivos, E2E 132 passed e 0 skipped em 66 testes de 5 specs, layout `pass`). Dois cenários sem E2E, declarados em `qa.not_covered_e2e` e no README: estado vazio por filtros e `TMDB_LANGUAGE` diferente de `pt-BR`.
+**Status:** Finalizado em 2026-10-08. PR #7 (`feature/correcoes-entrega` → `develop`) mergeado em 2026-10-08. Specs sincronizadas em `.work/specs/` (listagem-filmes, favoritos, detalhe-filme). QA `passed` (2 iterações, 14 findings resolvidos, nenhum em aberto, `functional: pass` com 409 testes em 35 arquivos, E2E 132 passed e 0 skipped em 66 testes de 5 specs, layout `pass`). Dois cenários sem E2E, declarados em `qa.not_covered_e2e` e no README: estado vazio por filtros e `TMDB_LANGUAGE` diferente de `pt-BR`.
 **Change:** `.work/changes/archive/2026-10-08-correcoes-entrega/`
 
 **Evidências:**

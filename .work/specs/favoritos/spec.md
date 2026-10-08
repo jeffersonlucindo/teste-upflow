@@ -47,6 +47,16 @@ Placement: `src/lib/favorites/store.ts` (`isFavoriteSnapshot`, `isFavoritesPaylo
 - ENTÃO só o item inválido é descartado
 - E os dois válidos continuam listados
 
+#### Cenário: Caminho de pôster adulterado
+- QUANDO o `localStorage` tem um favorito válido com `posterPath` fora do formato de caminho de imagem do TMDB (`/arquivo.ext`), por exemplo `"/../../etc.jpg"`
+- ENTÃO `/favoritos` lista o filme com o placeholder de pôster (validação por `isTmdbImagePath`, `src/lib/tmdb/images.ts`)
+- E a tela de erro não aparece
+- E a próxima gravação salva o item com `posterPath` nulo (`toFavoriteSnapshot`)
+
+#### Cenário: Caminho de pôster legítimo
+- QUANDO o favorito tem um `posterPath` devolvido pela API
+- ENTÃO o pôster é exibido como antes
+
 #### Cenário: Sobrescrita na próxima gravação
 - QUANDO a chave está corrompida e o usuário favorita um filme
 - ENTÃO a chave passa a conter um payload válido com apenas esse filme

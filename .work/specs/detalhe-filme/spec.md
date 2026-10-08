@@ -34,11 +34,16 @@ Endpoint TMDB usado (via `src/lib/tmdb/client.ts`): `GET /movie/{id}?append_to_r
 
 ### Requisito: Validação do id e not-found
 O sistema DEVE aceitar como id apenas um inteiro positivo em forma canônica, validado antes de
-qualquer chamada ao TMDB, e DEVE renderizar `not-found.tsx` para id inválido ou para filme que o
-TMDB não encontra (404 → `null` em `getMovieDetail`).
-Placement: `src/lib/tmdb/parseMovieId.ts` (`parseMovieId(raw): number | null`);
-`src/components/movie-detail/MovieDetails.tsx` (`notFound()`); `src/app/movie/[id]/not-found.tsx`
-(`EmptyState` `icon="film"`).
+qualquer chamada ao TMDB, e DEVE responder com status HTTP 404 e a tela "Página não encontrada"
+(em português, dentro do layout) quando o id é inválido, sem consultar o TMDB. Para um id válido que
+o TMDB não encontra (404 → `null` em `getMovieDetail`), DEVE renderizar `not-found.tsx` com
+"Filme não encontrado"; nesse caso o status continua 200, porque a resposta já começou a ser
+transmitida (D46).
+Placement: `src/lib/tmdb/parseMovieId.ts` (`parseMovieId(raw): number | null`); `src/proxy.ts`
+(matcher `/movie/:id`; para id inválido faz `rewrite` para um caminho sem rota, que o Next atende
+com 404 e o `src/app/not-found.tsx`); `src/components/movie-detail/MovieDetails.tsx`
+(`notFound()` para filme inexistente); `src/app/movie/[id]/not-found.tsx` (`EmptyState`
+`icon="film"`, `headingLevel={1}`).
 
 #### Cenário: Id canônico
 - QUANDO `parseMovieId("603")` é chamada
@@ -48,18 +53,34 @@ Placement: `src/lib/tmdb/parseMovieId.ts` (`parseMovieId(raw): number | null`);
 #### Cenário: Id rejeitado
 - QUANDO o id é `"abc"`, `"0"`, `"-1"`, `"1.5"`, `"0603"`, `"603abc"`, `" 603"`, `""`, `undefined` ou tem mais dígitos que um inteiro seguro
 - ENTÃO `parseMovieId` devolve `null`
-- E `/movie/<esse id>` renderiza o not-found sem nenhuma chamada ao TMDB
+- E `/movie/<esse id>` responde com status 404 e a tela "Página não encontrada", sem nenhuma chamada ao TMDB
 
-#### Cenário: Filme inexistente
-- QUANDO `/movie/999999999` é aberta e o TMDB responde 404
+#### Cenário: Id não numérico
+- QUANDO `/movie/abc` é requisitado
+- ENTÃO a resposta tem status 404
+- E a tela mostra "Página não encontrada" em português, dentro do layout
+
+#### Cenário: Id válido que o TMDB não conhece
+- QUANDO `/movie/999999999` é requisitado e o TMDB responde 404
 - ENTÃO `getMovieDetail` devolve `null` e `MovieDetails` chama `notFound()`
+- E a tela mostra "Filme não encontrado"
+- E o status continua 200, porque a resposta já começou a ser transmitida
 - E nenhum `error.tsx` é mostrado
 
-#### Cenário: Página not-found
-- QUANDO o not-found é renderizado
-- ENTÃO mostra o `EmptyState` com ícone de filme, "Filme não encontrado", a descrição "O endereço pode estar errado ou o filme não existe no TMDB." e o botão "Voltar à listagem" para `/`
+#### Cenário: Página not-found do filme
+- QUANDO o not-found do filme é renderizado
+- ENTÃO mostra o `EmptyState` com ícone de filme, "Filme não encontrado" em `h1` (único da página), a descrição "O endereço pode estar errado ou o filme não existe no TMDB." e o botão "Voltar à listagem" para `/`
 - E o `Header` continua visível
-- E o status HTTP observado (404, ou 200 com `noindex` quando o shell já foi enviado) fica registrado na evidência
+
+### Requisito: Página não encontrada em português
+O sistema DEVE responder a qualquer rota sem correspondência com status 404 e uma tela em português com link para a listagem.
+Placement: `src/app/not-found.tsx` (`EmptyState` `icon="search"`, `headingLevel={1}`, título da aba "Página não encontrada").
+
+#### Cenário: Rota inexistente
+- QUANDO `/naoexiste` é requisitado
+- ENTÃO a resposta tem status 404
+- E a tela mostra "Página não encontrada" com a ação "Voltar à listagem"
+- E há exatamente um `h1`
 
 #### Cenário: Erro do TMDB
 - QUANDO `getMovieDetail` lança `TmdbError` com `kind` diferente de `not_found` (token ausente, 401, 429, 5xx, rede)
@@ -97,20 +118,27 @@ imagem via `src/lib/tmdb/images.ts` (`posterUrl(path, POSTER_SIZE.detail)`).
 - E para `0`, `null`, `undefined`, `NaN` ou negativo devolve `null`
 
 ### Requisito: Sinopse com fallback de idioma
-O sistema DEVE mostrar a seção "Sinopse" sempre, com o texto em português quando houver; com aviso
-de idioma antes do texto e `lang` no parágrafo quando a sinopse vier em outro idioma; e com a
-mensagem "Sinopse não disponível." quando não houver nenhuma.
+O sistema DEVE mostrar a seção "Sinopse" sempre, com o texto no idioma pedido quando houver; com
+aviso de idioma antes do texto quando a sinopse não vier no idioma pedido (`TMDB_LANGUAGE`, via
+`MovieOverview.fallback`); com `lang` no parágrafo quando o idioma do texto difere do idioma do
+documento (`pt`), com ou sem aviso; e com a mensagem "Sinopse não disponível." quando não houver
+nenhuma.
 Placement: `src/components/movie-detail/Overview.tsx` (`{ overview: MovieOverview | null }`,
-`overviewNotice`); `src/lib/format/languageName.ts` (`languageName(code)` via `Intl.DisplayNames`
+`overviewNotice(overview)`); `src/lib/format/languageName.ts` (`languageName(code)` via `Intl.DisplayNames`
 em `pt-BR`); a escolha da sinopse é de `src/lib/tmdb/pickOverview.ts` (`tmdb-client`) e não é
 refeita aqui.
 
 #### Cenário: Sinopse em português
-- QUANDO `overview` é `{ text, language: "pt" }`
+- QUANDO `overview` é `{ text, language: "pt", fallback: false }`
 - ENTÃO o parágrafo mostra o texto em `text-text-secondary`, sem aviso e sem atributo `lang`
 
+#### Cenário: Sinopse no idioma pedido
+- QUANDO `TMDB_LANGUAGE` é `es-ES` e o filme tem sinopse em espanhol (`{ language: "es", fallback: false }`)
+- ENTÃO a sinopse aparece sem aviso de idioma
+- E o parágrafo tem `lang="es"`, porque o documento é `pt-BR`
+
 #### Cenário: Sinopse em outro idioma
-- QUANDO `overview` é `{ text, language: "en" }`
+- QUANDO `overview` é `{ text, language: "en", fallback: true }`
 - ENTÃO o aviso "Sinopse disponível apenas em inglês." (`text-[13px] text-text-muted`) aparece antes do texto
 - E o parágrafo do texto tem `lang="en"`
 - E para `language: "ja"` o aviso diz "…apenas em japonês."
@@ -156,6 +184,11 @@ O sistema DEVE renderizar a seção "Trailer" com um `iframe` de `youtube-nocook
 `MovieDetail.trailer` não é `null`, e DEVE omitir a seção inteira (inclusive o `h2`) caso contrário.
 Placement: `src/components/movie-detail/TrailerEmbed.tsx` (`{ trailer: MovieTrailer | null }`,
 `trailerEmbedUrl(key)`); a escolha do vídeo é de `src/lib/tmdb/pickTrailer.ts` (`tmdb-client`).
+
+#### Cenário: Trailer no idioma pedido
+- QUANDO há trailers oficiais em espanhol e em inglês e `TMDB_LANGUAGE` é `es-ES`
+- ENTÃO o trailer em espanhol é o escolhido (`pickTrailer(videos, language)`: idioma pedido, depois `en`, depois os outros; consulta com `videoLanguages(language)` em `src/lib/tmdb/params.ts`)
+- E com `pt-BR` o resultado é o mesmo de antes
 
 #### Cenário: Com trailer
 - QUANDO `trailer` é `{ key: "abc", name: "Official Trailer" }`

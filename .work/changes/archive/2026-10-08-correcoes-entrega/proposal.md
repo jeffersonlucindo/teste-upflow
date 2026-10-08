@@ -58,7 +58,7 @@ deles sugere, e todos cabem em um change curto com a validação completa.
   parágrafo do not-found, "O que ficou de fora" e "Melhorias futuras" atualizados com o que este
   change resolve; pré-requisito de Node corrigido; seção nova "Processo".
 - **Registros.** D8 revisada e D45–D48 novas em `.work/design/decisoes.md`; regra de README de
-  `.work/config.yaml > context` revisada; menções a `.claude/` em `.work/` e `docs/` reescritas;
+  `.work/config.yaml > context` revisada; menções ao ferramental local em `.work/` e `docs/` reescritas;
   `.work/prompts/` removido; comentário de `eslint.config.mjs` ajustado; `setup-catalogo`
   arquivado; `.work/design/components.md` com os componentes novos; L9 em `.work/backlog.md`.
 - Fora de escopo: combinar busca com gênero e ordenação; `retry()` no lugar de `reset()` nos
@@ -94,7 +94,7 @@ deles sugere, e todos cabem em um change curto com a validação completa.
   - [#L9] — README: clone, Node, contagens e textos que mudaram
   - [#L9] — README: resumo das decisões e seção "Processo"
   - [#L9] — Decisões D8 e D45–D48, regra de README e `components.md`
-  - [#L9] — Referências a `.claude/`, `.work/prompts/` e comentário do ESLint
+  - [#L9] — Referências ao ferramental local, `.work/prompts/` e comentário do ESLint
   - [#L9] — Arquivar o `setup-catalogo`
   - [#L9] — E2E dos comportamentos corrigidos
   - [#L9] — Validação (`apply.validation`, build com a flag, E2E)
@@ -112,7 +112,7 @@ deles sugere, e todos cabem em um change curto com a validação completa.
   `src/lib/favorites/store.ts`, `e2e/{detalhe-filme,shell}.spec.ts`, `package.json`,
   `package-lock.json` (só o bloco `engines` da raiz), `eslint.config.mjs`, `README.md`,
   `.work/design/{decisoes,components,README}.md`, `.work/config.yaml`, `.work/backlog.md`, os
-  arquivos de `.work/changes/` e `docs/` que citam `.claude/` ou o caminho do `setup-catalogo`.
+  arquivos de `.work/changes/` e `docs/` que citam o ferramental local ou o caminho do `setup-catalogo`.
 - Arquivos removidos: `.work/prompts/explore-inicial.md`.
 - Dependências: nenhuma nova.
 - Padrões reutilizados: inspecionados `src/components/movies/FilterBar.tsx` (refs, debounce,

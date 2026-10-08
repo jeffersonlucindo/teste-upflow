@@ -26,7 +26,7 @@ Decisão 5 (D48): a defesa fica em `images.ts`, que protege cards, detalhe e ele
 Os caminhos das fixtures continuam gerando URL; os adulterados devolvem `null`. `/favoritos` com o payload adulterado mostra o card com o placeholder de pôster e sem tela de erro.
 
 ## Resultado do QA
-Lido do bloco `qa` do arquivo de estado do change em `.work/changes/correcoes-entrega/` (2 iterações, 14 findings resolvidos, nenhum em aberto, `status: passed`). Nada foi rodado de novo para esta evidência.
+Lido do bloco `qa` do arquivo de estado do change em `.work/changes/archive/2026-10-08-correcoes-entrega/` (2 iterações, 14 findings resolvidos, nenhum em aberto, `status: passed`). Nada foi rodado de novo para esta evidência.
 - **E2E:** `pass`. `npm run e2e` registrou 132 execuções passadas e 0 skipped: 66 testes em 5 specs (`correcoes-entrega` 10, `detalhe-filme` 16, `favoritos` 22, `listagem-filmes` 16, `shell` 2), cada um nos projetos `desktop` (1280 px) e `mobile` (390 px). A contagem por spec vem de `playwright test --list` no projeto desktop. O cenário desta task não depende do TMDB.
 - **Layout:** `pass`. Gates de `e2e/support/layout.ts` em 1280 e 390 px e revisão visual do screenshot, sem findings em aberto.
 

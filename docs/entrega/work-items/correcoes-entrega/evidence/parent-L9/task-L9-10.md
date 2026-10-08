@@ -14,7 +14,7 @@ Os cinco comandos de `apply.validation` passaram sem `.env.local` e sem rede, o 
 ## Arquivos impactados
 | Arquivo | Ação | Descrição |
 |---------|------|-----------|
-| `.work/changes/correcoes-entrega/tasks.md` | alterado | Tasks 10.1 a 10.3 marcadas `[x]` |
+| `.work/changes/archive/2026-10-08-correcoes-entrega/tasks.md` | alterado | Tasks 10.1 a 10.3 marcadas `[x]` |
 | arquivo de estado do change | alterado | Bloco `implementation.validation` e, depois, `qa` |
 
 ## Decisões técnicas

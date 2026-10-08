@@ -1,8 +1,8 @@
 # Tasks — correcoes-entrega
 
 ## Contexto
-- Proposal: .work/changes/correcoes-entrega/proposal.md
-- Design: .work/changes/correcoes-entrega/design.md
+- Proposal: .work/changes/archive/2026-10-08-correcoes-entrega/proposal.md
+- Design: .work/changes/archive/2026-10-08-correcoes-entrega/design.md
 - Decisões: .work/design/decisoes.md (D8 revisada; D45–D48 novas) · Contratos: .work/design/components.md · Docs da versão instalada: node_modules/next/dist/docs/ (`proxy.md`, `not-found.md`, `use-link-status.md`)
 - Ambiente: Windows 11, Node 22, npm. Os grupos 1 e 9 e a verificação de status do grupo 4 precisam de `.env.local` com `TMDB_API_READ_TOKEN` e de rede; a Validação roda sem token e sem rede.
 - Regra deste change: evidências e documentos não citam hash de commit (design, "Abordagem").
@@ -91,8 +91,8 @@
   - Inspecionar: `eslint.config.mjs:15`; `.work/design/README.md:100-101`
   - Criar/Alterar: os dois trechos, sem citar pasta ou ferramenta que não é entregue
   - Critério: `npm run lint` verde
-- [x] 8.3 Referências a `.claude/` e `.work/prompts/` [#L9]
-  - Inspecionar: saída de `git grep -n "\.claude" -- .work docs README.md eslint.config.mjs ":!*.html" ":!.work/config.yaml"` (arquivos em `.work/changes/archive/*/{tasks,design}.md`, `.work/changes/setup-catalogo/`, `.work/design/{README,decisoes}.md`, `docs/entrega/work-items/{setup-catalogo,readme-entrega}/evidence/`); design decisão 15
+- [x] 8.3 Referências ao ferramental local e `.work/prompts/` [#L9]
+  - Inspecionar: busca pela pasta do ferramental local em `.work`, `docs`, `README.md` e `eslint.config.mjs` (arquivos em `.work/changes/archive/*/{tasks,design}.md`, `.work/changes/setup-catalogo/`, `.work/design/{README,decisoes}.md`, `docs/entrega/work-items/{setup-catalogo,readme-entrega}/evidence/`); design decisão 15
   - Criar/Alterar: trocar a menção ao caminho por "ferramental local, não versionado" ou remover a frase; `git rm .work/prompts/explore-inicial.md`
   - Critério: o mesmo `git grep` devolve vazio; nenhum resultado de evidência (números, status, comandos de validação) foi alterado
 - [x] 8.4 Arquivar o `setup-catalogo` [#L9]

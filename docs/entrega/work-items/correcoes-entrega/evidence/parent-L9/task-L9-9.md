@@ -23,7 +23,7 @@ Decisão 17 e as regras de `qa.default.dimensions.e2e`: chegar à tela pela inte
 `npm run e2e` (registrado no QA, não rodado de novo aqui): 132 execuções passadas, 0 skipped, 66 testes em 5 specs nos projetos `desktop` (1280 px) e `mobile` (390 px): `correcoes-entrega` 10, `detalhe-filme` 16, `favoritos` 22, `listagem-filmes` 16, `shell` 2.
 
 ## Resultado do QA
-Lido do bloco `qa` do arquivo de estado do change em `.work/changes/correcoes-entrega/`: 2 iterações, 14 findings resolvidos, nenhum em aberto, `status: passed`; `functional: pass` (`npm run check` com 409 testes em 35 arquivos, e `npm run build`), `e2e: pass`, `layout: pass`.
+Lido do bloco `qa` do arquivo de estado do change em `.work/changes/archive/2026-10-08-correcoes-entrega/`: 2 iterações, 14 findings resolvidos, nenhum em aberto, `status: passed`; `functional: pass` (`npm run check` com 409 testes em 35 arquivos, e `npm run build`), `e2e: pass`, `layout: pass`.
 - **E2E:** números acima. A contagem por spec vem de `playwright test --list` no projeto desktop.
 - **Layout:** gates em 1280 e 390 px e revisão visual, sem findings em aberto. O estado pendente da paginação foi conferido pelo código, não por screenshot.
 
