@@ -20,6 +20,16 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+describe("ErrorState: título", () => {
+  it("é o h1 da tela", () => {
+    render(<ErrorState error={new Error("falhou")} reset={vi.fn()} />);
+
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Não foi possível carregar os filmes" }),
+    ).toBeInTheDocument();
+  });
+});
+
 describe("ErrorState", () => {
   it("mostra o título padrão e um texto genérico fora do desenvolvimento", () => {
     render(<ErrorState error={error} reset={reset} />);

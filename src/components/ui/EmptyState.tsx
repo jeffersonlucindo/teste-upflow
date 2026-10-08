@@ -13,6 +13,8 @@ export interface EmptyStateProps {
   title: string;
   description?: string;
   action?: EmptyStateAction;
+  /** Nível do título. 1 só nas telas que substituem a página inteira (erro, não encontrado). */
+  headingLevel?: 1 | 2;
 }
 
 // Um desenho por nome, para os estados excepcionais terem o mesmo tamanho e o mesmo traço.
@@ -41,7 +43,15 @@ const ICONS: Record<EmptyStateIcon, ReactNode> = {
 };
 
 /** Padrão único dos estados excepcionais: busca vazia, favoritos vazio, erro e não encontrado. */
-export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
+export function EmptyState({
+  icon,
+  title,
+  description,
+  action,
+  headingLevel = 2,
+}: EmptyStateProps) {
+  const Heading = headingLevel === 1 ? "h1" : "h2";
+
   return (
     <div className="flex flex-col items-center gap-4 rounded-xl border border-border-subtle bg-surface-100 px-6 py-16 text-center">
       <svg
@@ -58,7 +68,7 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
       >
         {ICONS[icon]}
       </svg>
-      <p className="text-base font-semibold text-text-primary">{title}</p>
+      <Heading className="text-base font-semibold text-text-primary">{title}</Heading>
       {description ? <p className="text-text-muted">{description}</p> : null}
       {action ? (
         "href" in action ? (

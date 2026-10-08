@@ -31,6 +31,7 @@ export function ErrorState({
   return (
     <EmptyState
       icon="alert"
+      headingLevel={1}
       title={title}
       description={
         process.env.NODE_ENV === "development" ? error.message : "Tente novamente em instantes."
