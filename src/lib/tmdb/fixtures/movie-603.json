@@ -1,0 +1,125 @@
+{
+  "adult": false,
+  "genres": [
+    { "id": 28, "name": "Ação" },
+    { "id": 878, "name": "Ficção científica" }
+  ],
+  "id": 603,
+  "original_language": "en",
+  "original_title": "The Matrix",
+  "overview": "Um hacker descobre que a realidade em que vive é uma simulação criada por máquinas.",
+  "popularity": 98.4,
+  "poster_path": "/matrix-poster.jpg",
+  "release_date": "1999-03-30",
+  "runtime": 136,
+  "title": "Matrix",
+  "vote_average": 8.2,
+  "vote_count": 25000,
+  "credits": {
+    "cast": [
+      { "id": 1004, "name": "Ator Quatro", "character": "Agente Smith", "profile_path": "/ator-4.jpg", "order": 3 },
+      { "id": 1001, "name": "Ator Um", "character": "Neo", "profile_path": "/ator-1.jpg", "order": 0 },
+      { "id": 1008, "name": "Ator Oito", "character": "Mouse", "profile_path": null, "order": 7 },
+      { "id": 1003, "name": "Atriz Três", "character": "Trinity", "profile_path": "/ator-3.jpg", "order": 2 },
+      { "id": 1010, "name": "Ator Dez", "character": "Switch", "profile_path": null, "order": 9 },
+      { "id": 1002, "name": "Ator Dois", "character": "Morpheus", "profile_path": "/ator-2.jpg", "order": 1 },
+      { "id": 1006, "name": "Ator Seis", "character": "Cypher", "profile_path": "/ator-6.jpg", "order": 5 },
+      { "id": 1009, "name": "Ator Nove", "character": "Apoc", "profile_path": "/ator-9.jpg", "order": 8 },
+      { "id": 1005, "name": "Atriz Cinco", "character": "Oráculo", "profile_path": "/ator-5.jpg", "order": 4 },
+      { "id": 1007, "name": "Ator Sete", "character": "Tank", "profile_path": "/ator-7.jpg", "order": 6 }
+    ]
+  },
+  "videos": {
+    "results": [
+      {
+        "id": "vid-teaser-en",
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "key": "teaserEN0001",
+        "name": "Teaser",
+        "official": true,
+        "published_at": "2020-01-10T12:00:00.000Z",
+        "site": "YouTube",
+        "type": "Teaser"
+      },
+      {
+        "id": "vid-trailer-en-fan",
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "key": "trailerEN2010",
+        "name": "Trailer (fan upload)",
+        "official": false,
+        "published_at": "2010-05-01T12:00:00.000Z",
+        "site": "YouTube",
+        "type": "Trailer"
+      },
+      {
+        "id": "vid-trailer-en-official",
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "key": "trailerEN2014",
+        "name": "Official Trailer",
+        "official": true,
+        "published_at": "2014-03-01T12:00:00.000Z",
+        "site": "YouTube",
+        "type": "Trailer"
+      },
+      {
+        "id": "vid-trailer-pt",
+        "iso_639_1": "pt",
+        "iso_3166_1": "BR",
+        "key": "trailerPT2016",
+        "name": "Trailer legendado",
+        "official": false,
+        "published_at": "2016-08-20T12:00:00.000Z",
+        "site": "YouTube",
+        "type": "Trailer"
+      },
+      {
+        "id": "vid-trailer-vimeo",
+        "iso_639_1": "en",
+        "iso_3166_1": "US",
+        "key": "123456789",
+        "name": "Trailer (Vimeo)",
+        "official": true,
+        "published_at": "2022-02-02T12:00:00.000Z",
+        "site": "Vimeo",
+        "type": "Trailer"
+      }
+    ]
+  },
+  "translations": {
+    "translations": [
+      {
+        "iso_3166_1": "BR",
+        "iso_639_1": "pt",
+        "name": "Português",
+        "english_name": "Portuguese",
+        "data": {
+          "title": "Matrix",
+          "overview": "Um hacker descobre que a realidade em que vive é uma simulação criada por máquinas."
+        }
+      },
+      {
+        "iso_3166_1": "US",
+        "iso_639_1": "en",
+        "name": "English",
+        "english_name": "English",
+        "data": {
+          "title": "The Matrix",
+          "overview": "A hacker discovers that the reality he lives in is a simulation created by machines."
+        }
+      },
+      {
+        "iso_3166_1": "JP",
+        "iso_639_1": "ja",
+        "name": "日本語",
+        "english_name": "Japanese",
+        "data": {
+          "title": "マトリックス",
+          "overview": "ハッカーは、自分の生きる現実が機械の作った仮想世界だと知る。"
+        }
+      }
+    ]
+  }
+}

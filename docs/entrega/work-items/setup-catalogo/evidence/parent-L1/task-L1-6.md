@@ -15,9 +15,9 @@ Os cinco comandos de `apply.validation` passaram na raiz do repositório. A deci
 | Arquivo | Ação | Descrição |
 |---------|------|-----------|
 | `.work/backlog.md` | alterado | L1 e L8 em `doing` |
-| `.work/changes/setup-catalogo/tasks.md` | alterado | 24 tasks marcadas `[x]` |
-| `.work/changes/setup-catalogo/.devflow.yaml` | alterado | `implementation.status: completed`, `validated: true` |
-| `.work/changes/setup-catalogo/change.html` | criado | Página estática do change |
+| `.work/changes/archive/2026-10-07-setup-catalogo/tasks.md` | alterado | 24 tasks marcadas `[x]` |
+| `.work/changes/archive/2026-10-07-setup-catalogo/.devflow.yaml` | alterado | `implementation.status: completed`, `validated: true` |
+| `.work/changes/archive/2026-10-07-setup-catalogo/change.html` | criado | Página estática do change |
 
 ## Decisões técnicas
 - D42: validação com cinco comandos nomeados.
@@ -32,4 +32,4 @@ Os cinco comandos de `apply.validation` passaram na raiz do repositório. A deci
 | `npm run build` | verde; `/`, `/_not-found` e `/favoritos` estáticas |
 
 ## Observações
-O ESLint também cobre `.claude/devflow/tools/htmlgen.mjs`, porque o design só ignora `.work/` e `scripts/`.
+O ESLint também cobre o gerador de HTML do ferramental local (não versionado), porque o design só ignora `.work/` e `scripts/`.

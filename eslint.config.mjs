@@ -12,9 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Deste repositório: documentação do devflow (tem .tsx em .work/design/reference/) e scripts Node.
+    // Deste repositório: documentação em .work/ (tem .tsx em .work/design/reference/) e scripts Node.
     ".work/**",
     "scripts/**",
+    "e2e/.output/**",
   ]),
 ]);
 

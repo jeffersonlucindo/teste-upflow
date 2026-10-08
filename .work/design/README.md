@@ -17,7 +17,7 @@
 | `screens/pdf/*.png` | Recortes das três telas do **PDF original** do teste | `Teste Técnico Desenvolvedor Frontend.pdf` |
 | `tokens/tokens.json` | Design System **"Catálogo."**: 14 tokens de cor, tema escuro único | cópia de `reference/catalogo-filmes/design/` |
 | `tokens/README.md` | Princípios, mapa de uso por elemento, contraste WCAG, uso no Tailwind | idem |
-| `decisoes.md` | **Decisões técnicas** D1–D43 (decisão, alternativas, trade-off, onde registrar) | `/devflow:explore` de 2026-10-06 |
+| `decisoes.md` | **Decisões técnicas** D1–D44 (decisão, alternativas, trade-off, onde registrar) | `/devflow:explore` de 2026-10-06 |
 | `components.md` | **Inventário de componentes** (pasta, tela, server/client, tokens, props, estados) e fronteira server × client | idem |
 | `reference/catalogo-filmes/` | Bundle gerado pelo Claude Design junto com as telas. **Referência visual apenas**: código, changes OpenSpec e workflow dele não são baseline (ver seção abaixo). Fora do git. | gerado em 2026-10-06, 1 commit |
 
@@ -97,8 +97,7 @@ mesmos de `tokens/`). O resto não é baseline deste repo, por decisão do explo
 - O shell Next (`src/`, `package.json`, `next.config.ts`, `scripts/check-tokens.mjs`) não é copiado.
   O scaffold é feito do zero com `create-next-app@16.4.0` (D3) e cada arquivo nosso segue o padrão
   de `.work/config.yaml > context` e `components.md`.
-- Os cinco changes em `openspec/changes/` e o workflow OpenSpec (`.claude/commands/opsx/`,
-  `.claude/skills/openspec-*`) não são o fluxo deste repo (aqui é o devflow-core). As decisões
+- Os cinco changes em `openspec/changes/` e o workflow OpenSpec não são o fluxo deste repo (o ferramental local não é versionado). As decisões
   deste repo estão em `decisoes.md`, tomadas e justificadas por nós.
 - Tem `.git/` próprio (1 commit). A pasta fica fora do git do projeto (D8).
 

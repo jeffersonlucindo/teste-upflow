@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { FavoritesList } from "@/components/favorites/FavoritesList";
+
 export const metadata: Metadata = {
   title: "Meus favoritos",
 };
@@ -11,6 +13,7 @@ export default function FavoritosPage() {
         <h1 className="font-display text-4xl font-extrabold tracking-tight">Meus favoritos</h1>
         <p className="text-text-muted">Os filmes salvos ficam neste navegador.</p>
       </div>
+      <FavoritesList />
     </section>
   );
 }

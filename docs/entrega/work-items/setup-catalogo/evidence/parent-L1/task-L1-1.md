@@ -34,7 +34,7 @@ O projeto Next.js 16.4 foi gerado com `create-next-app@16.4.0` em um diretório 
 - D3: scaffold em diretório temporário e movido para a raiz; nada copiado de `.work/design/reference/`.
 - D4: npm com lockfile versionado, `engines` e `.nvmrc`.
 - D5: Tailwind v4 via PostCSS.
-- D8 e D10: `.work/` e `.claude/` versionados, `reference/` ignorado, fim de linha LF.
+- D8 e D10: `.work/` versionado (o ferramental local, não), `reference/` ignorado, fim de linha LF.
 
 ## Resultado
 `git check-ignore` confirma que `.work/design/reference/` e `.env.local` são ignorados e que `.env.example` é versionável. `npm ls vitest vite @vitejs/plugin-react` não mostra peer pendente. Versões instaladas: next 16.4.0, react 19.3.0, tailwindcss 4.3.3, vitest 5.0.3, vite 8.3.3.

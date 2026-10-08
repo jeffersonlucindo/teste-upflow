@@ -1,0 +1,50 @@
+schema: spec-driven
+created: 2026-10-08
+workItems:
+  provider: none
+  parents: [L9]
+  tasks: []
+phase: finish
+artifacts:
+  proposal: done
+  design: done
+  tasks: done
+  specs: done
+implementation:
+  status: completed
+  completed_tasks: 23
+  total_tasks: 23
+  current_task: ""
+  validated: true
+  validation:
+    status: passed
+    last_run: 2026-10-08T11:39:09Z
+    failures: []
+  updated_at: 2026-10-08T11:39:09Z
+qa:
+  iterations: 2
+  findings_resolved: 14
+  findings_open: []
+  functional: pass                 # npm run check (409 testes, 35 arquivos) e npm run build
+  e2e: pass                        # npm run e2e: 132 passed (66 testes em 5 specs, desktop e mobile), 0 skipped
+  layout: pass                     # gates em 1280 e 390 px e revisão visual; estado pendente da paginação conferido pelo código
+  not_covered_e2e: ["estado vazio por filtros (Limpar filtros): sem combinação estável no TMDB real; coberto por resolveEmptyState.test", "sinopse e trailer com TMDB_LANGUAGE diferente de pt-BR: o servidor de E2E tem um idioma só; coberto por teste unitário"]
+  status: passed
+  updated_at: 2026-10-08T12:02:05Z
+commits:
+  count: 13
+pr:
+  number: 7
+  url: https://github.com/jeffersonlucindo/desafio-up-flow/pull/7
+  target: develop
+  state: merged
+  opened_at: 2026-10-08
+  merged_at: 2026-10-08
+  linkedItems: [L9]
+finish:
+  archived_at: 2026-10-08
+  archive: .work/changes/archive/2026-10-08-correcoes-entrega/
+  specs_synced: [listagem-filmes, favoritos, detalhe-filme]
+  backlog: "L9 → done"
+  merge: merged
+  warnings: []
