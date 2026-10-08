@@ -4,7 +4,7 @@ workItems:
   provider: none
   parents: [L9]
   tasks: []
-phase: pr
+phase: finish
 artifacts:
   proposal: done
   design: done
@@ -37,5 +37,14 @@ pr:
   number: 7
   url: https://github.com/jeffersonlucindo/desafio-up-flow/pull/7
   target: develop
-  state: open
+  state: merged
   opened_at: 2026-10-08
+  merged_at: 2026-10-08
+  linkedItems: [L9]
+finish:
+  archived_at: 2026-10-08
+  archive: .work/changes/archive/2026-10-08-correcoes-entrega/
+  specs_synced: [listagem-filmes, favoritos, detalhe-filme]
+  backlog: "L9 → done"
+  merge: merged
+  warnings: []

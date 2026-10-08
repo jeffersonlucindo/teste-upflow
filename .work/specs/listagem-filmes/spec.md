@@ -111,6 +111,16 @@ Placement: `src/components/movies/FilterBar.tsx` (client; `SEARCH_DEBOUNCE_MS = 
 - ENTÃO a URL final é a da última ação e o campo de busca fica vazio, acompanhando a URL
 - E a mesma busca pode ser enviada de novo
 
+#### Cenário: Gênero escolhido antes de a busca ser enviada
+- QUANDO o usuário digita no campo de busca e, antes de 350 ms, escolhe um gênero ou uma ordenação
+- ENTÃO o filtro vence: o timer da busca é cancelado, a URL passa a ter `genre` (ou `sort`) e não tem `q`
+- E o campo de busca fica vazio
+- E nenhuma navegação de busca acontece depois
+
+#### Cenário: Busca enviada sem filtro em seguida
+- QUANDO o usuário digita e espera 350 ms sem tocar nos selects
+- ENTÃO a URL passa a ter `q`, sem `genre` nem `sort`
+
 #### Cenário: Voltar e avançar
 - QUANDO o usuário usa o botão voltar e a URL muda de `/?q=matrix` para `/`
 - ENTÃO o campo passa a mostrar vazio e os resultados voltam aos populares
@@ -148,8 +158,21 @@ Placement: `src/components/movies/FilterBarLoader.tsx` (RSC async; `await connec
 - E voltar retorna à URL anterior
 
 #### Cenário: Gênero sem resultado
-- QUANDO a URL traz um `genre` sem filmes (ex.: id inexistente)
-- ENTÃO o `EmptyState` mostra "Nenhum filme encontrado" com a ação "Limpar filtros" para `/`
+- QUANDO a URL traz um `genre` que existe na lista do TMDB, mas não tem filmes
+- ENTÃO o `EmptyState` mostra "Nenhum filme encontrado" com a ação "Limpar filtros" para `/` (escolha em `resolveEmptyState`, `src/lib/listing/emptyState.ts`)
+- E um id que não está na lista não chega a este estado: vira "Todos" (ver "Gênero desconhecido na URL")
+
+### Requisito: Gênero desconhecido na URL
+O sistema DEVE tratar um `genre` que não está na lista de gêneros do TMDB como ausência de filtro.
+Placement: `resolveGenreId` (`src/lib/listing/resolveGenre.ts`), usado por `MovieResults` (que só
+chama `getGenres()` quando a URL traz `genre`) e por `FilterBar` (para que o próximo filtro
+escolhido não leve o id desconhecido adiante nos links).
+
+#### Cenário: Id de gênero inexistente
+- QUANDO a página é aberta em `/?genre=999999`
+- ENTÃO a lista mostra os filmes populares
+- E o select "Gênero" mostra "Todos"
+- E os links da paginação não levam `genre`
 
 ### Requisito: Ordenação por popularidade, nota e data de lançamento
 O sistema DEVE oferecer o select "Ordenar por" com exatamente as opções "Popularidade",
@@ -266,6 +289,25 @@ Placement: `src/app/page.tsx` (dois `<Suspense>`), `src/components/movies/Filter
 - QUANDO `next dev` roda com a flag e o usuário abre `/`, `/?q=matrix` e `/?page=2`
 - ENTÃO não há insight nem erro de blocking-route, de `useSearchParams` sem Suspense ou de IO síncrono
 - E o shell aparece antes dos dois buracos
+
+### Requisito: Título da listagem reflete a busca
+O sistema DEVE mostrar no `h1` da listagem "Resultados da busca" quando há `q` e "Filmes populares" quando não há.
+Placement: `src/components/movies/ListingTitle.tsx` (RSC async que lê `searchParams`, sob `<Suspense>`
+em `src/app/page.tsx`; o fallback é "Filmes populares").
+
+#### Cenário: Busca ativa
+- QUANDO a página é aberta em `/?q=matrix`
+- ENTÃO o `h1` é "Resultados da busca"
+
+### Requisito: Paginação indica carregamento
+O sistema DEVE indicar, no link de paginação clicado, que a página seguinte está carregando, até ela chegar.
+Placement: `src/components/movies/PaginationPending.tsx` (client; `useLinkStatus`; ponto fora do
+fluxo, posicionado na folga do `px-5` do link, para não mudar a largura do botão).
+
+#### Cenário: Clique em "Próxima"
+- QUANDO o usuário clica em "Próxima" e a resposta ainda não chegou
+- ENTÃO o link mostra um indicador de carregamento
+- E um texto equivalente fica disponível para leitor de tela
 
 ### Requisito: Responsividade e acessibilidade da listagem
 O sistema DEVE renderizar a listagem a 390 px com grid de duas colunas e sem overflow horizontal, e

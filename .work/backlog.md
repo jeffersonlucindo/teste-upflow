@@ -15,7 +15,7 @@
 | L6 | Página de detalhe em /movie/[id]: sinopse (com fallback de idioma), nota, elenco principal e trailer quando houver | requisito | DESAFIO.md › Requisitos Obrigatórios | detalhe-filme | done |
 | L7 | Favoritos: persistência no client e página/aba que liste os favoritos | requisito | DESAFIO.md › Requisitos Obrigatórios | favoritos | done |
 | L8 | README com instruções de execução, decisões técnicas e trade-offs | entrega | DESAFIO.md › Entrega | setup-catalogo (esqueleto), readme-entrega | done |
-| L9 | Correções da revisão da entrega: defeitos de borda na listagem, nos favoritos e no detalhe, 404 em português e com status real, README (clone, contagens, processo) e registros | correcao | Revisão da entrega v0.1.0 (2026-10-08) | correcoes-entrega | todo |
+| L9 | Correções da revisão da entrega: defeitos de borda na listagem, nos favoritos e no detalhe, 404 em português e com status real, README (clone, contagens, processo) e registros | correcao | Revisão da entrega v0.1.0 (2026-10-08) | correcoes-entrega | done |
 
 ## Hierarquia sugerida (parent → tasks)
 
