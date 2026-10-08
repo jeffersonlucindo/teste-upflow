@@ -4,7 +4,7 @@ workItems:
   provider: none
   parents: [L9]
   tasks: []
-phase: commit
+phase: pr
 artifacts:
   proposal: done
   design: done
@@ -33,3 +33,9 @@ qa:
   updated_at: 2026-10-08T12:02:05Z
 commits:
   count: 13
+pr:
+  number: 7
+  url: https://github.com/jeffersonlucindo/desafio-up-flow/pull/7
+  target: develop
+  state: open
+  opened_at: 2026-10-08
