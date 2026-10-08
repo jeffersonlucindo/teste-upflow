@@ -14,6 +14,7 @@ const STORAGE_KEY = "catalogo.favorites.v1";
 const SNAPSHOT_KEYS = ["id", "posterPath", "releaseDate", "savedAt", "title", "voteAverage", "voteCount"];
 const SUFFIX = " · Catálogo.";
 const NOT_FOUND_TITLE = "Filme não encontrado";
+const ROOT_NOT_FOUND_TITLE = "Página não encontrada";
 const NOT_FOUND_TEXT = "O endereço pode estar errado ou o filme não existe no TMDB.";
 const RATING = /^(Nota \d+,\d|Sem nota)$/;
 const FAVORITE_BUTTON = /aos favoritos$|dos favoritos$/;
@@ -90,22 +91,29 @@ async function expectNotFoundUi(page: Page) {
   await expect(backLink(page)).toHaveAttribute("href", "/");
   await expect(nav(page)).toBeVisible();
   await expect(page).toHaveTitle(`${NOT_FOUND_TITLE}${SUFFIX}`);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveCount(0);
+  await expect(page.getByRole("heading", { level: 1, name: NOT_FOUND_TITLE })).toHaveCount(1);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+  await expect(page.getByText("Não foi possível carregar o filme")).toHaveCount(0);
+}
+
+/** Id inválido: o proxy responde 404 com o not-found da raiz, em português e com um só h1. */
+async function expectRootNotFoundUi(page: Page) {
+  await expect(page.getByRole("heading", { level: 1, name: ROOT_NOT_FOUND_TITLE })).toHaveCount(1);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+  await expect(backLink(page)).toHaveAttribute("href", "/");
+  await expect(nav(page)).toBeVisible();
+  await expect(page).toHaveTitle(new RegExp(`^${ROOT_NOT_FOUND_TITLE}`));
+  await expect(page.getByText(NOT_FOUND_TITLE, { exact: true })).toHaveCount(0);
   await expect(page.getByText("Não foi possível carregar o filme")).toHaveCount(0);
 }
 
 test.describe("detalhe do filme: sem TMDB (id inválido não chega à API)", () => {
   for (const id of ["abc", "0603", "0", "603abc"]) {
-    test(`/movie/${id}: not-found com UI completa e noindex`, async ({ page }, testInfo) => {
+    test(`/movie/${id}: 404 de verdade com a tela da raiz`, async ({ page }, testInfo) => {
       const response = await page.goto(`/movie/${id}`);
-      await expectNotFoundUi(page);
-
-      // O notFound() roda depois de o streaming começar: 200 + noindex, ou 404 se o Next ainda puder.
-      const status = response!.status();
-      expect([200, 404], `status HTTP inesperado: ${status}`).toContain(status);
-      if (status === 200) {
-        await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute("content", /noindex/);
-      }
+      expect(response!.status()).toBe(404);
+      await expectRootNotFoundUi(page);
+      await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex");
 
       await expectNoHorizontalOverflow(page);
       await expectTokenColors(page);
@@ -113,7 +121,7 @@ test.describe("detalhe do filme: sem TMDB (id inválido não chega à API)", () 
       await expectMinHeight(backLink(page));
       if (id === "abc") {
         await expectFocusRing(backLink(page));
-        await captureLayout(page, testInfo, "detalhe-not-found");
+        await captureLayout(page, testInfo, "detalhe-id-invalido");
       }
     });
   }
@@ -399,10 +407,21 @@ test.describe("detalhe do filme: com dados do TMDB", () => {
     }
   });
 
-  test("id inexistente (404 do TMDB): not-found sem error.tsx, e o botão volta à listagem", async ({ page }) => {
-    await page.goto("/movie/999999999");
+  test("id inexistente (404 do TMDB): not-found sem error.tsx, e o botão volta à listagem", async ({
+    page,
+  }, testInfo) => {
+    const response = await page.goto("/movie/999999999");
+    // A resposta já começou a ser transmitida quando o TMDB responde 404: o status fica 200.
+    expect(response!.status()).toBe(200);
     await expectNotFoundUi(page);
+    // O status 200 não deixa a página ser indexada: o not-found do segmento marca noindex.
+    // Com a resposta já transmitida, o Next emite a meta no head e também no corpo.
+    await expect(page.locator('meta[name="robots"][content="noindex"]').first()).toBeAttached();
+    await expectNoHorizontalOverflow(page);
+    await expectTokenColors(page);
     await expectMinHeight(backLink(page));
+    await expectFocusRing(backLink(page));
+    await captureLayout(page, testInfo, "detalhe-not-found");
 
     await backLink(page).click();
     await expect(page).toHaveURL("/");

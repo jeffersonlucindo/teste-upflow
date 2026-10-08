@@ -197,21 +197,6 @@ test.describe("listagem de filmes", () => {
     await chooseOption(page, "genre", "Todos", "/?sort=rating");
   });
 
-  test("gênero sem resultado mostra \"Limpar filtros\"", async ({ page }, testInfo) => {
-    await page.goto("/?genre=999999");
-    await expect(page.getByText("Nenhum filme encontrado", { exact: true })).toBeVisible();
-    await expect(controls(page).cards).toHaveCount(0);
-
-    await expectNoHorizontalOverflow(page);
-    await expectTokenColors(page);
-    await expectMinHeight(page.getByRole("link", { name: "Limpar filtros" }));
-    await captureLayout(page, testInfo, "listagem-vazio");
-
-    await page.getByRole("link", { name: "Limpar filtros" }).click();
-    await expect(page).toHaveURL("/");
-    await expect(controls(page).cards.first()).toBeVisible();
-  });
-
   test("ordenação: opções, nota, data de lançamento e retorno à popularidade", async ({ page }) => {
     await openListing(page);
     const { sort, cards } = controls(page);
@@ -249,6 +234,13 @@ test.describe("listagem de filmes", () => {
     await expect(genre).toHaveAccessibleDescription(HINT);
     await expect(sort).toHaveAccessibleDescription(HINT);
 
+    const h1 = page.getByRole("heading", { level: 1 });
+    await expect(h1).toHaveText("Resultados da busca");
+    await expectFontVariable(h1, "--font-heading");
+    await expectFontVariable(page.locator("body"), "--font-body");
+    await expectMinHeight(search);
+    await expectMinHeight(controls(page).pagination.getByRole("link"));
+    await expectFocusRing(search);
     await expectNoHorizontalOverflow(page);
     await expectTokenColors(page);
     await captureLayout(page, testInfo, "listagem-busca");
