@@ -2,7 +2,9 @@ import { connection } from "next/server";
 
 import { EmptyState } from "@/components/ui/EmptyState";
 import { buildListingHref, buildListingSearch, parseListingParams } from "@/lib/listing/params";
-import { fetchListing } from "@/lib/tmdb/client";
+import { plural, resolveEmptyState } from "@/lib/listing/emptyState";
+import { resolveGenreId } from "@/lib/listing/resolveGenre";
+import { fetchListing, getGenres } from "@/lib/tmdb/client";
 
 import { toMovieCardData } from "./MovieCard";
 import { MovieGrid } from "./MovieGrid";
@@ -12,50 +14,24 @@ export interface MovieResultsProps {
   searchParams: PageProps<"/">["searchParams"];
 }
 
-function plural(count: number, singular: string, pluralForm: string): string {
-  return `${count.toLocaleString("pt-BR")} ${count === 1 ? singular : pluralForm}`;
-}
-
 /** Único ponto da listagem que lê a URL no servidor: o await mantém a busca fora do shell. */
 export async function MovieResults({ searchParams }: MovieResultsProps) {
-  const params = parseListingParams(await searchParams);
+  const parsed = parseListingParams(await searchParams);
   // A URL sozinha não basta: ela também é resolvida ao prerenderizar o destino de um link, e a
   // ordenação por data lê o relógio. A listagem só é montada com uma requisição de verdade.
   await connection();
+  // Gênero que o TMDB não lista vira "Todos", como `sort` inválido vira o padrão.
+  const genreId =
+    parsed.genreId === null ? null : resolveGenreId(parsed.genreId, await getGenres());
+  const params = { ...parsed, genreId };
   const result = await fetchListing(params);
 
   // Sem redirect: uma resposta só, e a URL digitada continua visível para ser corrigida.
-  if (params.page > result.totalPages) {
-    return (
-      <EmptyState
-        icon="search"
-        title="Esta página não existe"
-        description={`A lista tem ${plural(result.totalPages, "página", "páginas")}.`}
-        action={{
-          label: "Ir para a última página",
-          href: buildListingHref({ ...params, page: result.totalPages }),
-        }}
-      />
-    );
-  }
-
-  if (result.movies.length === 0) {
-    return params.query !== null ? (
-      <EmptyState
-        icon="search"
-        title={`Nenhum filme encontrado para “${params.query}”`}
-        description="Confira a grafia ou tente outro título."
-        action={{ label: "Limpar busca", href: "/" }}
-      />
-    ) : (
-      <EmptyState
-        icon="search"
-        title="Nenhum filme encontrado"
-        description="Nenhum filme corresponde a esses filtros."
-        action={{ label: "Limpar filtros", href: "/" }}
-      />
-    );
-  }
+  const empty = resolveEmptyState(params, {
+    totalPages: result.totalPages,
+    movieCount: result.movies.length,
+  });
+  if (empty) return <EmptyState icon="search" {...empty} />;
 
   return (
     <>
