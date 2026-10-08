@@ -2,6 +2,8 @@
 // localStorage. Sem diretiva e sem `window` no nível do módulo: o FavoriteButton é renderizado
 // no servidor e importa este arquivo.
 
+import { isTmdbImagePath } from "@/lib/tmdb/images";
+
 export const FAVORITES_STORAGE_KEY = "catalogo.favorites.v1";
 export const FAVORITES_PAYLOAD_VERSION = 1;
 
@@ -60,12 +62,16 @@ export function isFavoritesPayload(value: unknown): value is FavoritesPayload {
   );
 }
 
-/** Copia campo a campo: o que a origem tiver a mais (elenco, sinopse, URL do pôster) não é gravado. */
+/**
+ * Copia campo a campo: o que a origem tiver a mais (elenco, sinopse, URL do pôster) não é gravado.
+ * Pôster fora do formato de caminho do TMDB vira nulo: o favorito fica, sem o pôster.
+ */
 export function toFavoriteSnapshot(movie: FavoriteMovie, savedAt: number): FavoriteSnapshot {
   return {
     id: movie.id,
     title: movie.title,
-    posterPath: movie.posterPath,
+    posterPath:
+      movie.posterPath !== null && isTmdbImagePath(movie.posterPath) ? movie.posterPath : null,
     voteAverage: movie.voteAverage,
     voteCount: movie.voteCount,
     releaseDate: movie.releaseDate,

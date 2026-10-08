@@ -16,7 +16,7 @@ O README do template foi reescrito com o que já dá para documentar: como rodar
 
 ## Decisões técnicas
 - Um parágrafo por decisão, com a alternativa e o trade-off.
-- O README trata só do código: não explica o fluxo de trabalho nem cita `.work/` ou `.claude/`.
+- O README trata só do código: não explica o fluxo de trabalho nem cita `.work/` ou o ferramental local.
 
 ## Resultado
 A seção de decisões tem 13 parágrafos, correspondentes a D1 a D7, D9 a D11, D33, D34 e D40, sem os ids. As instruções foram seguidas em uma cópia limpa dos arquivos versionáveis: `npm ci`, cópia de `.env.example` para `.env.local`, `npm run check` e `npm run build` passaram.

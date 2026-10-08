@@ -73,6 +73,6 @@ export function toMovieDetail(dto: TmdbMovieDetailDto, requestedLanguage: string
       .sort((a, b) => a.order - b.order)
       .slice(0, MAIN_CAST_LIMIT)
       .map(toCastMember),
-    trailer: pickTrailer(dto.videos?.results),
+    trailer: pickTrailer(dto.videos?.results, requestedLanguage),
   };
 }

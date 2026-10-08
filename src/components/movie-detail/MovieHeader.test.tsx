@@ -14,7 +14,7 @@ const MATRIX = {
   genres: [{ id: 28, name: "Ação" }],
   voteAverage: 8.7,
   voteCount: 25000,
-  overview: { text: "Um hacker descobre a verdade.", language: "pt" },
+  overview: { text: "Um hacker descobre a verdade.", language: "pt", fallback: false },
   cast: [],
   trailer: null,
 } satisfies MovieDetail;

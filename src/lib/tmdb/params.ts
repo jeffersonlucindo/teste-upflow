@@ -18,6 +18,15 @@ export const SORT_BY: Record<ListingSort, string> = {
 /** Só com sort=rating: sem o corte, o topo é filme com um voto e nota 10. */
 export const RATING_MIN_VOTE_COUNT = 200;
 
+/**
+ * Idiomas aceitos em `include_video_language`, do pedido para o geral: `pt-BR,pt,en,null`. O
+ * valor primário sozinho só casa com vídeos pt-PT; os brasileiros exigem `pt-BR` na lista.
+ */
+export function videoLanguages(language: string): string {
+  const primary = language.split("-")[0].toLowerCase();
+  return [...new Set([language, primary, "en", "null"])].join(",");
+}
+
 /** Limite da API: acima da página 500 o TMDB responde com erro. */
 export const MAX_PAGE = 500;
 

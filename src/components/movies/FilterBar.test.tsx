@@ -159,6 +159,36 @@ describe("FilterBar: busca por título", () => {
   });
 });
 
+describe("FilterBar: última ação vence", () => {
+  it("descarta a busca pendente quando o gênero muda antes dos 350 ms", () => {
+    const { busca, genero } = renderAt("");
+
+    type(busca, "mat");
+    vi.advanceTimersByTime(SEARCH_DEBOUNCE_MS - 100);
+    fireEvent.change(genero, { target: { value: "28" } });
+
+    expect(push).toHaveBeenCalledTimes(1);
+    expect(push).toHaveBeenCalledWith("/?genre=28");
+    expect(busca).toHaveValue("");
+
+    vi.advanceTimersByTime(SEARCH_DEBOUNCE_MS * 2);
+    expect(replace).not.toHaveBeenCalled();
+    expect(push).toHaveBeenCalledTimes(1);
+  });
+
+  it("descarta a busca pendente quando a ordenação muda antes dos 350 ms", () => {
+    const { busca, ordenacao } = renderAt("");
+
+    type(busca, "mat");
+    fireEvent.change(ordenacao, { target: { value: "rating" } });
+    vi.advanceTimersByTime(SEARCH_DEBOUNCE_MS * 2);
+
+    expect(push).toHaveBeenCalledWith("/?sort=rating");
+    expect(replace).not.toHaveBeenCalled();
+    expect(busca).toHaveValue("");
+  });
+});
+
 describe("FilterBar: gênero e ordenação", () => {
   it("lista Todos e os gêneros recebidos", () => {
     const { genero } = renderAt("");
@@ -191,6 +221,15 @@ describe("FilterBar: gênero e ordenação", () => {
     fireEvent.change(genero, { target: { value: "" } });
 
     expect(push).toHaveBeenCalledWith("/");
+  });
+
+  it("trata o gênero desconhecido da URL como Todos e não o leva adiante", () => {
+    const { genero, ordenacao } = renderAt("genre=999999");
+    expect(genero).toHaveValue("");
+
+    fireEvent.change(ordenacao, { target: { value: "rating" } });
+
+    expect(push).toHaveBeenCalledWith("/?sort=rating");
   });
 
   it("mostra as três ordenações com Popularidade como padrão", () => {

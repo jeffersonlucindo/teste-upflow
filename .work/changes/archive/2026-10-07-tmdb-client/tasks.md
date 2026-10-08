@@ -99,4 +99,4 @@
 ## 7. Validação
 - [x] 7.1 Rodar comandos de validação existentes (comandos de config.yaml > apply.validation): `npm run tokens:check`, `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build` — o build sem `.env.local` e sem rede (pilar 7; nenhuma página importa `src/lib/tmdb/` ainda) [#L1]
 - [x] 7.2 Rodar testes existentes: `npm run test` (NavLink, Button e os seis de `src/lib/tmdb/`: errors, params, images, pickOverview, pickTrailer, mappers) e registrar a saída na evidência [#L1]
-- [x] 7.3 Conferir que `.work/backlog.md` marca `L1` como `doing` (o finish deste change marca `done`: `tmdb-client` completa L1); conferir que `.work/design/decisoes.md` D17–D19 batem com `design.md` decisão 13; regenerar o HTML do change (`node .claude/devflow/tools/htmlgen.mjs tmdb-client`) [#L1]
+- [x] 7.3 Conferir que `.work/backlog.md` marca `L1` como `doing` (o finish deste change marca `done`: `tmdb-client` completa L1); conferir que `.work/design/decisoes.md` D17–D19 batem com `design.md` decisão 13; regenerar o HTML do change (com o ferramental local, não versionado) [#L1]

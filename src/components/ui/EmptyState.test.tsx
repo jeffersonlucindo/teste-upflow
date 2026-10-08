@@ -4,6 +4,21 @@ import { describe, expect, it, vi } from "vitest";
 
 import { EmptyState } from "./EmptyState";
 
+describe("EmptyState: nível do título", () => {
+  it("usa h2 por padrão", () => {
+    render(<EmptyState icon="search" title="Vazio" />);
+
+    expect(screen.getByRole("heading", { level: 2, name: "Vazio" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { level: 1 })).not.toBeInTheDocument();
+  });
+
+  it("usa h1 quando a tela inteira foi substituída", () => {
+    render(<EmptyState icon="alert" title="Erro" headingLevel={1} />);
+
+    expect(screen.getByRole("heading", { level: 1, name: "Erro" })).toBeInTheDocument();
+  });
+});
+
 describe("EmptyState", () => {
   it("mostra título e descrição", () => {
     render(

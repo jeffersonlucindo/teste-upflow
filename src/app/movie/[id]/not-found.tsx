@@ -4,6 +4,7 @@ export default function MovieNotFound() {
   return (
     <EmptyState
       icon="film"
+      headingLevel={1}
       title="Filme não encontrado"
       description="O endereço pode estar errado ou o filme não existe no TMDB."
       action={{ label: "Voltar à listagem", href: "/" }}

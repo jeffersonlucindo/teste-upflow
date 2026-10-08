@@ -22,7 +22,7 @@ const MATRIX_DETAIL = {
   ...MATRIX,
   runtime: 136,
   genres: [{ id: 28, name: "Ação" }],
-  overview: { text: "Um hacker descobre a verdade.", language: "pt" },
+  overview: { text: "Um hacker descobre a verdade.", language: "pt", fallback: false },
   cast: [],
   trailer: null,
 } satisfies MovieDetail;

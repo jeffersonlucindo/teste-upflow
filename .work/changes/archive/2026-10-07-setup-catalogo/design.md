@@ -11,7 +11,7 @@ medidas`. Cores só por token de `tokens/tokens.json`. Contratos dos componentes
 
 Fatos verificados nos docs de `next@16.4.0` (`node_modules/next/dist/docs/` depois do scaffold;
 lidos no explore a partir do pacote):
-- `create-next-app` 16.4 tolera `.claude`, `AGENTS.md`, `README.md`, `docs` na pasta alvo, mas não
+- `create-next-app` 16.4 tolera o ferramental local (não versionado), `AGENTS.md`, `README.md`, `docs` na pasta alvo, mas não
   `.work` nem `DESAFIO.md`; por isso o scaffold roda num diretório temporário (D3).
 - `next/font/google` baixa CSS e arquivos de fonte **no build** (`02-components/font.md`). Como o
   critério deste change é build sem rede, as fontes ficam locais (revisão de D11, abaixo).

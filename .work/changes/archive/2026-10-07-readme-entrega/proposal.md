@@ -109,7 +109,7 @@ sem misturar com código.
   local, Node 22, npm, devtools do browser (contraste e viewport), a sonda `scripts/tmdb-probe.mjs`
   do `tmdb-client`.
 - Padrões reutilizados: inspecionados `README.md` (esqueleto do `setup-catalogo` mais as seções
-  dos finishes 2–5), `.work/changes/setup-catalogo/design.md` decisão 14 (esqueleto do README), as
+  dos finishes 2–5), `.work/changes/archive/2026-10-07-setup-catalogo/design.md` decisão 14 (esqueleto do README), as
   listas "Decisões para o README" ao fim de "Riscos / Trade-offs" em
   `.work/changes/{tmdb-client,listagem-filmes,favoritos,detalhe-filme}/design.md`,
   `.work/design/decisoes.md` (D1–D43, coluna "Onde", "Pendências de verificação", "Perguntas em

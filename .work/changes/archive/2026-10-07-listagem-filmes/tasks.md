@@ -120,7 +120,7 @@
   - Criar/Alterar: nada; devtools em 390 × 844 e 1280 × 800; navegar só por Tab/Enter
   - Critério: a 390 px o grid tem 2 colunas sem overflow horizontal, o `form` quebra linha (busca em linha própria, selects lado a lado), a paginação quebra linha e todos os controles têm 44 px; a 1280 px a tela bate com o PNG em estrutura (cinco colunas de cards, paginação centralizada); por teclado: campo → selects → links dos cards → paginação, com anel de foco âmbar; Enter no campo aplica a busca na hora
 - [x] 8.7 Build e `next dev` com `CATALOGO_CACHE_COMPONENTS=1` (D42) [#L2]
-  - Inspecionar: `.work/changes/setup-catalogo/tasks.md` task 5.2 (como ligar a flag em bash e PowerShell); `design.md` decisão 17
+  - Inspecionar: `.work/changes/archive/2026-10-07-setup-catalogo/tasks.md` task 5.2 (como ligar a flag em bash e PowerShell); `design.md` decisão 17
   - Criar/Alterar: nada; `CATALOGO_CACHE_COMPONENTS=1 npm run build` **sem** `.env.local` (PowerShell: `$env:CATALOGO_CACHE_COMPONENTS="1"; npm run build`); depois `CATALOGO_CACHE_COMPONENTS=1 npm run dev` com `.env.local` e abrir `/`, `/?q=matrix`, `/?page=2`, `/?genre=28&sort=rating`
   - Critério: build verde sem token e sem rede, `/` listada como `◐` (shell estático com buracos) e `/favoritos` como `○`; nenhuma requisição a `api.themoviedb.org` durante o build; `next dev` sem insight/erro de blocking-route, de `useSearchParams` sem Suspense ou de IO síncrono no console e no overlay; o shell (h1, barra desabilitada, skeleton) aparece primeiro e os dois buracos chegam em seguida; voltar `npm run build` sem a flag: verde
 
@@ -133,4 +133,4 @@
 ## 10. Validação
 - [x] 10.1 Rodar comandos de validação existentes (comandos de config.yaml > apply.validation): `npm run tokens:check`, `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build` — o build sem `.env.local` e sem rede (pilar 7) [#L2] [#L3] [#L4] [#L5]
 - [x] 10.2 Rodar testes existentes: `npm run test` (NavLink, Button, os seis de `src/lib/tmdb/`, e os novos: `lib/listing/params`, `lib/format/rating`, `lib/format/releaseYear`, `ui/EmptyState`, `movies/MovieCard`, `movies/FilterBar`, `movies/Pagination`) e registrar a saída na evidência [#L2] [#L3] [#L4] [#L5]
-- [x] 10.3 Conferir que a task 8.7 (build e `next dev` com a flag) foi registrada na evidência com o resumo do build; regenerar o HTML do change (`node .claude/devflow/tools/htmlgen.mjs listagem-filmes`) [#L2] [#L3] [#L4] [#L5]
+- [x] 10.3 Conferir que a task 8.7 (build e `next dev` com a flag) foi registrada na evidência com o resumo do build; regenerar o HTML do change (com o ferramental local, não versionado) [#L2] [#L3] [#L4] [#L5]

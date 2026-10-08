@@ -17,6 +17,7 @@ import {
   buildListingHref,
   parseListingParams,
 } from "@/lib/listing/params";
+import { resolveGenreId } from "@/lib/listing/resolveGenre";
 import { LISTING_SORTS } from "@/lib/tmdb/params";
 import type { Genre, ListingQuery, ListingSort } from "@/lib/tmdb/types";
 
@@ -53,7 +54,9 @@ export function FilterBar({ genres, disabled = false }: FilterBarProps) {
 function LiveFilterBar({ genres }: { genres: Genre[] }) {
   const searchParams = useSearchParams();
   const url = searchParams.toString();
-  const current = parseListingParams(searchParams);
+  const parsed = parseListingParams(searchParams);
+  // Mesma regra do servidor: gênero que o TMDB não lista é "Todos" e não segue nos próximos links.
+  const current = { ...parsed, genreId: resolveGenreId(parsed.genreId, genres) };
   const router = useRouter();
   const { isPending, startTransition } = useListingTransition();
   const hintId = useId();
@@ -110,6 +113,11 @@ function LiveFilterBar({ genres }: { genres: Genre[] }) {
 
   // Filtro novo sempre volta à primeira página.
   function pushFilter(change: Partial<ListingQuery>) {
+    // Os selects só valem fora da busca: escolher um filtro descarta o texto ainda não enviado.
+    clearTimeout(timerRef.current);
+    committedRef.current = null;
+    if (inputRef.current) inputRef.current.value = "";
+
     // Parte do que está na tela: duas escolhas seguidas se somam antes de a primeira chegar.
     const next = { ...shown, ...change, page: 1 };
     startTransition(() => {

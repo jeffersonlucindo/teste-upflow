@@ -5,9 +5,19 @@ export const PROFILE_SIZE = "w185";
 
 export type PosterSize = (typeof POSTER_SIZE)[keyof typeof POSTER_SIZE];
 
-/** O caminho da API já começa com "/". Sem caminho devolve null e a UI mostra o placeholder. */
+const IMAGE_PATH = /^\/[A-Za-z0-9_-]+\.(jpg|jpeg|png|webp|svg)$/;
+
+/** Formato dos caminhos que o TMDB devolve: "/arquivo.ext", sem subpasta, query ou "..". */
+export function isTmdbImagePath(path: string): boolean {
+  return IMAGE_PATH.test(path);
+}
+
+/**
+ * O caminho da API já começa com "/". Sem caminho, ou com um fora do formato (o valor pode vir
+ * do localStorage), devolve null e a UI mostra o placeholder.
+ */
 function imageUrl(path: string | null | undefined, size: string): string | null {
-  return path ? `${TMDB_IMAGE_BASE}/${size}${path}` : null;
+  return path && isTmdbImagePath(path) ? `${TMDB_IMAGE_BASE}/${size}${path}` : null;
 }
 
 export function posterUrl(path: string | null | undefined, size: PosterSize): string | null {

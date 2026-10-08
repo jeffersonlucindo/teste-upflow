@@ -15,6 +15,7 @@
 | L6 | Página de detalhe em /movie/[id]: sinopse (com fallback de idioma), nota, elenco principal e trailer quando houver | requisito | DESAFIO.md › Requisitos Obrigatórios | detalhe-filme | done |
 | L7 | Favoritos: persistência no client e página/aba que liste os favoritos | requisito | DESAFIO.md › Requisitos Obrigatórios | favoritos | done |
 | L8 | README com instruções de execução, decisões técnicas e trade-offs | entrega | DESAFIO.md › Entrega | setup-catalogo (esqueleto), readme-entrega | done |
+| L9 | Correções da revisão da entrega: defeitos de borda na listagem, nos favoritos e no detalhe, 404 em português e com status real, README (clone, contagens, processo) e registros | correcao | Revisão da entrega v0.1.0 (2026-10-08) | correcoes-entrega | todo |
 
 ## Hierarquia sugerida (parent → tasks)
 
@@ -36,5 +37,6 @@ está na coluna abaixo.
 | 4 | `favoritos` | L7 | 3 | favoritar na listagem → aparece em `/favoritos` → remover some; reload mantém; duas abas sincronizam; payload corrompido não quebra; testes do store e do hook; build com a flag ligada | 3–4 |
 | 5 | `detalhe-filme` | L6 | 2, 4 | `/movie/603` completo; `/movie/abc` e id inexistente → not-found; sinopse nos três casos; trailer some sem vídeo; "Voltar" preserva filtros; 390 e 1280 px; build com a flag ligada | 4 |
 | 6 | `readme-entrega` | L8 | 1–5 | clone limpo + `npm ci` + `.env.local` + `npm run dev` funciona; README com execução, decisões (D1–D44 consolidadas), trade-offs, flags, melhorias futuras (só código: sem seção de processo nem menção ao fluxo); checklist de teclado, contraste, 390/1280; repositório compartilhado | 5 |
+| 7 | `correcoes-entrega` | L9 | 1–6 | os defeitos da revisão reproduzidos antes e ausentes depois (corrida busca × gênero, `posterPath` adulterado, `/naoexiste` e `/movie/abc` com 404 em português, `?genre=999999`); README com a URL de clone do repositório de entrega, contagens corretas e a seção "Processo"; `npm run check`, `npm run build` nos dois modos e `npm run e2e` verdes | 6 |
 
 Ordem de corte se faltar prazo: D43 em `.work/design/decisoes.md`.

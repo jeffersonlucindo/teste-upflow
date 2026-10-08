@@ -97,8 +97,7 @@ mesmos de `tokens/`). O resto não é baseline deste repo, por decisão do explo
 - O shell Next (`src/`, `package.json`, `next.config.ts`, `scripts/check-tokens.mjs`) não é copiado.
   O scaffold é feito do zero com `create-next-app@16.4.0` (D3) e cada arquivo nosso segue o padrão
   de `.work/config.yaml > context` e `components.md`.
-- Os cinco changes em `openspec/changes/` e o workflow OpenSpec (`.claude/commands/opsx/`,
-  `.claude/skills/openspec-*`) não são o fluxo deste repo (aqui é o devflow-core). As decisões
+- Os cinco changes em `openspec/changes/` e o workflow OpenSpec não são o fluxo deste repo (o ferramental local não é versionado). As decisões
   deste repo estão em `decisoes.md`, tomadas e justificadas por nós.
 - Tem `.git/` próprio (1 commit). A pasta fica fora do git do projeto (D8).
 

@@ -49,7 +49,7 @@ funcionalidade, e prova desde o dia 1 que o build passa sem token e sem rede nos
   `tokens:check`, `check`.
 - `.env.example`, `.gitignore` (com `.work/design/reference/` e `!.env.example`),
   `.gitattributes`, `.nvmrc`, `engines`, `AGENTS.md`, README com as seções iniciais.
-- `.work/` e `.claude/` passam a ser parte do repositório versionado (D8).
+- `.work/` passa a ser parte do repositório versionado (D8); o ferramental local não é versionado.
 - Fora de escopo: qualquer chamada ao TMDB, listagem, detalhe, favoritos funcionais, `EmptyState`,
   `error.tsx` (nenhuma página deste change busca dados).
 

@@ -1,21 +1,21 @@
 # Tasks — setup-catalogo
 
 ## Contexto
-- Proposal: .work/changes/setup-catalogo/proposal.md
-- Design: .work/changes/setup-catalogo/design.md
+- Proposal: .work/changes/archive/2026-10-07-setup-catalogo/proposal.md
+- Design: .work/changes/archive/2026-10-07-setup-catalogo/design.md
 - Decisões: .work/design/decisoes.md (D1–D11, D33, D34, D40) · Contratos: .work/design/components.md
 - Ambiente: Windows 11, Node 22, npm 10. Comandos abaixo em Git Bash; equivalentes PowerShell onde fizer diferença.
 
 ## 1. Scaffold e higiene do repositório
 <!-- [{{ref_token}}] é o ref token do tracker (ex.: #123, PROJ-123, ou vazio quando tracker=none). Resolvido por tracker.ref_token. -->
 - [x] 1.1 Gerar o projeto com `create-next-app@16.4.0` num diretório temporário [#L1]
-  - Inspecionar: raiz do repo (`ls -la`): deve conter só `.git/`, `.claude/`, `.work/`, `DESAFIO.md`; sem `README.md` nem `.gitignore` para não haver colisão ao mover
+  - Inspecionar: raiz do repo (`ls -la`): deve conter só `.git/`, o ferramental local (não versionado), `.work/`, `DESAFIO.md`; sem `README.md` nem `.gitignore` para não haver colisão ao mover
   - Criar/Alterar: `npx create-next-app@16.4.0 "$TMP/cna-catalogo" --ts --eslint --tailwind --app --src-dir --import-alias "@/*" --use-npm --disable-git --skip-install --no-cache-components --yes` (se `--no-cache-components` for rejeitada, rodar sem ela e remover `cacheComponents`/`partialPrefetching` do `next.config.ts` gerado)
   - Critério: diretório temporário com `package.json` (next 16.4.0, react 19.3), `src/app/{layout,page}.tsx`, `src/app/globals.css`, `postcss.config.mjs`, `eslint.config.mjs`, `tsconfig.json` com `"@/*": ["./src/*"]`, `AGENTS.md`, `gitignore`/`.gitignore`
 - [x] 1.2 Mover o conteúdo gerado para a raiz do repositório [#L1]
   - Inspecionar: conteúdo do temporário (inclusive ocultos: `.gitignore`); a raiz não pode ter arquivo homônimo
   - Criar/Alterar: mover tudo para a raiz (`mv "$TMP/cna-catalogo"/{.,}* .` ou `robocopy /E /MOVE` no PowerShell); apagar o temporário
-  - Critério: `git status` mostra os arquivos novos na raiz; `.claude/`, `.work/`, `DESAFIO.md` intactos; `cat .gitignore` contém `/node_modules` e `.env*`
+  - Critério: `git status` mostra os arquivos novos na raiz; o ferramental local (não versionado), `.work/`, `DESAFIO.md` intactos; `cat .gitignore` contém `/node_modules` e `.env*`
 - [x] 1.3 Higiene de git e Node [#L1]
   - Inspecionar: `.gitignore` gerado; `.work/design/README.md > .gitignore (decidido, D8)`
   - Criar/Alterar: acrescentar ao `.gitignore` as linhas `.work/design/reference/` e `!.env.example`; criar `.gitattributes` com `* text=auto eol=lf` e `*.woff2 binary`; criar `.nvmrc` com `22`; em `package.json`, `"engines": { "node": ">=20.9" }` e `"name": "catalogo-filmes"`, `"private": true`
@@ -104,4 +104,4 @@
 ## 6. Validação
 - [x] 6.1 Rodar comandos de validação existentes (comandos de config.yaml > apply.validation): `npm run tokens:check`, `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build`
 - [x] 6.2 Rodar testes existentes: `npm run test` (NavLink e Button) e registrar a saída na evidência
-- [x] 6.3 Conferir que `.work/design/decisoes.md` D11 (já revisada no propose: fontes locais) bate com o que foi implementado; marcar `L1` como `doing` em `.work/backlog.md`; regenerar o HTML do change (`node .claude/devflow/tools/htmlgen.mjs setup-catalogo`)
+- [x] 6.3 Conferir que `.work/design/decisoes.md` D11 (já revisada no propose: fontes locais) bate com o que foi implementado; marcar `L1` como `doing` em `.work/backlog.md`; regenerar o HTML do change (com o ferramental local, não versionado)

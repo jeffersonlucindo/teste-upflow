@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import movie603 from "./fixtures/movie-603.json";
-import { pickTrailer } from "./pickTrailer";
+import { pickTrailer as pick } from "./pickTrailer";
 import type { TmdbVideoDto } from "./types";
+
+// Os casos existentes valem para o idioma padrão do projeto.
+const pickTrailer = (videos: Parameters<typeof pick>[0]) => pick(videos, "pt-BR");
 
 const fixtureVideos: TmdbVideoDto[] = movie603.videos.results;
 
@@ -92,5 +95,27 @@ describe("pickTrailer", () => {
     pickTrailer(fixtureVideos);
 
     expect(fixtureVideos.map((item) => item.key)).toEqual(keys);
+  });
+
+  it("com es-ES pedido, o trailer em espanhol vem antes do inglês e do português", () => {
+    const videos = [
+      video({ key: "en", iso_639_1: "en" }),
+      video({ key: "pt", iso_639_1: "pt" }),
+      video({ key: "es", iso_639_1: "es", published_at: "2010-01-01T00:00:00.000Z" }),
+    ];
+
+    expect(pick(videos, "es-ES")?.key).toBe("es");
+  });
+
+  it("com es-ES pedido e sem espanhol, o inglês vem antes dos outros", () => {
+    const videos = [video({ key: "pt", iso_639_1: "pt" }), video({ key: "en", iso_639_1: "en" })];
+
+    expect(pick(videos, "es-ES")?.key).toBe("en");
+  });
+
+  it("com en-US pedido, o inglês é o idioma pedido", () => {
+    const videos = [video({ key: "pt", iso_639_1: "pt" }), video({ key: "en", iso_639_1: "en" })];
+
+    expect(pick(videos, "en-US")?.key).toBe("en");
   });
 });

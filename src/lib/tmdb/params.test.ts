@@ -10,6 +10,7 @@ import {
   buildSearchParams,
   clampPage,
   todayUtc,
+  videoLanguages,
 } from "./params";
 import type { ListingQuery } from "./types";
 
@@ -125,6 +126,17 @@ describe("buildListingRequest", () => {
     );
 
     expect(Object.keys(params)).toEqual(["include_adult", "query", "page"]);
+  });
+});
+
+describe("videoLanguages", () => {
+  it.each([
+    ["pt-BR", "pt-BR,pt,en,null"],
+    ["es-ES", "es-ES,es,en,null"],
+    ["en-US", "en-US,en,null"],
+    ["pt", "pt,en,null"],
+  ])("deriva a lista de %s", (language, expected) => {
+    expect(videoLanguages(language)).toBe(expected);
   });
 });
 
