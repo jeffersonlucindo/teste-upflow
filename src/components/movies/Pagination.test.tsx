@@ -43,6 +43,13 @@ describe("Pagination", () => {
     expect(screen.getByText("Página 3 de 5")).toBeInTheDocument();
   });
 
+  it("ancora o indicador de carregamento no próprio link (relative nos dois lados)", () => {
+    const { anterior, proxima } = renderPagination(3, 5);
+
+    expect(anterior).toHaveClass("relative");
+    expect(proxima).toHaveClass("relative");
+  });
+
   it("não tem link quando só há uma página", () => {
     const { anterior, proxima } = renderPagination(1, 1);
 

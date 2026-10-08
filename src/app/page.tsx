@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 
 import { FilterBar } from "@/components/movies/FilterBar";
 import { FilterBarLoader } from "@/components/movies/FilterBarLoader";
+import { LISTING_TITLE_CLASS, ListingTitle } from "@/components/movies/ListingTitle";
 import { ListingTransition, ListingTransitionRegion } from "@/components/movies/ListingTransition";
 import { MovieGridSkeleton } from "@/components/movies/MovieGridSkeleton";
 import { MovieResults } from "@/components/movies/MovieResults";
@@ -18,7 +19,9 @@ export const metadata: Metadata = {
 export default function HomePage({ searchParams }: PageProps<"/">) {
   return (
     <section className="flex flex-col gap-6">
-      <h1 className="font-display text-4xl font-extrabold tracking-tight">Filmes populares</h1>
+      <Suspense fallback={<h1 className={LISTING_TITLE_CLASS}>Filmes populares</h1>}>
+        <ListingTitle searchParams={searchParams} />
+      </Suspense>
       <ListingTransition>
         <Suspense fallback={<FilterBar genres={[]} disabled />}>
           <FilterBarLoader />

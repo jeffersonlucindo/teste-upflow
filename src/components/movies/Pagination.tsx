@@ -1,5 +1,7 @@
 import { ButtonLink, buttonClassName, type ButtonVariant } from "@/components/ui/Button";
 
+import { PaginationPending } from "./PaginationPending";
+
 export interface PaginationProps {
   page: number;
   totalPages: number;
@@ -11,8 +13,9 @@ export function Pagination({ page, totalPages, hrefFor }: PaginationProps) {
   return (
     <nav aria-label="Paginação" className="flex flex-wrap items-center justify-center gap-4">
       {page > 1 ? (
-        <ButtonLink variant="outline" href={hrefFor(page - 1)} rel="prev">
+        <ButtonLink variant="outline" href={hrefFor(page - 1)} rel="prev" className="relative">
           Anterior
+          <PaginationPending />
         </ButtonLink>
       ) : (
         <DisabledLink variant="outline">Anterior</DisabledLink>
@@ -21,8 +24,9 @@ export function Pagination({ page, totalPages, hrefFor }: PaginationProps) {
         Página {page} de {totalPages}
       </span>
       {page < totalPages ? (
-        <ButtonLink variant="primary" href={hrefFor(page + 1)} rel="next">
+        <ButtonLink variant="primary" href={hrefFor(page + 1)} rel="next" className="relative">
           Próxima
+          <PaginationPending />
         </ButtonLink>
       ) : (
         <DisabledLink variant="primary">Próxima</DisabledLink>
