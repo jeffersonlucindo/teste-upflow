@@ -133,7 +133,7 @@ describe("toFavoriteSnapshot", () => {
       ...MATRIX,
       runtime: 136,
       genres: [{ id: 28, name: "Ação" }],
-      overview: { text: "Um hacker descobre a verdade.", language: "pt" },
+      overview: { text: "Um hacker descobre a verdade.", language: "pt", fallback: false },
       cast: [{ id: 6384, name: "Keanu Reeves", character: "Neo", profilePath: null, order: 0 }],
       trailer: { key: "abc", name: "Trailer" },
     } satisfies MovieDetail;
@@ -145,6 +145,19 @@ describe("toFavoriteSnapshot", () => {
     const card = { ...MATRIX, posterUrl: "https://exemplo/p.jpg", releaseYear: 1999 };
 
     expect(Object.keys(toFavoriteSnapshot(card, 100)).sort()).toEqual(SNAPSHOT_KEYS);
+  });
+});
+
+describe("toFavoriteSnapshot: pôster fora do formato", () => {
+  it.each(["/../../etc.jpg", "https://evil.example/p.jpg", "p.jpg", "/a/b.jpg"])(
+    "grava posterPath nulo para %s",
+    (posterPath) => {
+      expect(toFavoriteSnapshot({ ...MATRIX, posterPath }, 100).posterPath).toBeNull();
+    },
+  );
+
+  it("mantém o caminho legítimo", () => {
+    expect(toFavoriteSnapshot(MATRIX, 100).posterPath).toBe("/matrix.jpg");
   });
 });
 
@@ -189,6 +202,15 @@ describe("parseFavorites", () => {
     ]);
 
     expect(parseFavorites(raw)).toEqual([snapshot({ title: "Recente", savedAt: 300 })]);
+  });
+
+  it("mantém o item com posterPath adulterado, sem o pôster", () => {
+    const raw = payload([snapshot({ id: 1, posterPath: "/../../etc.jpg" }), snapshot({ id: 2 })]);
+
+    expect(parseFavorites(raw).map((item) => [item.id, item.posterPath]).sort()).toEqual([
+      [1, null],
+      [2, "/matrix.jpg"],
+    ]);
   });
 
   it("remove chaves que não são do snapshot", () => {
@@ -295,6 +317,28 @@ describe("createFavoritesStore", () => {
 
     expect(store.getSnapshot().map((item) => item.id)).toEqual([DUNA.id, MATRIX.id]);
     expect(storedPayload()).toMatchObject({ items: [{ id: DUNA.id }, { id: MATRIX.id }] });
+  });
+
+  it("a próxima gravação salva com posterPath nulo o item de pôster adulterado", () => {
+    localStorage.setItem(
+      FAVORITES_STORAGE_KEY,
+      payload([snapshot({ id: 1, posterPath: "/../../etc.jpg", savedAt: 50 })]),
+    );
+    const store = createFavoritesStore(() => localStorage);
+
+    store.toggle(DUNA, 200);
+
+    expect(storedPayload()).toMatchObject({
+      items: [{ id: DUNA.id }, { id: 1, posterPath: null }],
+    });
+  });
+
+  it("toggle de um filme com pôster fora do formato grava posterPath nulo", () => {
+    const store = createFavoritesStore(() => localStorage);
+
+    store.toggle({ ...MATRIX, posterPath: "https://evil.example/p.jpg" }, 100);
+
+    expect(storedPayload()).toMatchObject({ items: [{ id: MATRIX.id, posterPath: null }] });
   });
 
   it("remove ao alternar de novo", () => {
