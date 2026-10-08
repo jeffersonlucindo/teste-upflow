@@ -115,7 +115,7 @@ promoção e o compartilhamento e o finish anota a data. O dia da contagem não 
    | 9 | Acessibilidade › Checklist executado | práticas do app, D34 por extenso, limites conhecidos, tabela do checklist | D34 do esqueleto + checklist deste change |
    | 10 | O que ficou de fora | busca multipágina (D14 c), itens de D43 efetivamente cortados, não-objetivos deliberados | nova (D43 › "Onde") |
    | 11 | Melhorias futuras | lista consolidada com o change de origem | esqueleto (vazio) + "type guard" do `tmdb-client` + D38 + anotações dos designs |
-   | 12 | Processo › Como foi criado › Entrega | devflow-core no Claude Code; `.work/` e `.claude/`; os seis changes na ordem; fluxo de branches (`feature/<change>` → PR → `develop` → `main`); evidências; D8; D3; GitHub (URL) e data do compartilhamento | "Processo" do esqueleto + D41 + entrega |
+   | 12 | Processo › Como foi criado › Entrega | devflow-core no Claude Code; `.work/` e o ferramental local (não versionado); os seis changes na ordem; fluxo de branches (`feature/<change>` → PR → `develop` → `main`); evidências; D8; D3; GitHub (URL) e data do compartilhamento | "Processo" do esqueleto + D41 + entrega |
    "Processo" vai para o fim (no esqueleto vinha antes de "Decisões") porque quem avalia precisa
    primeiro rodar, depois entender a arquitetura e só então o método; "Rotas e requisitos" entra
    logo após o título porque é o índice do enunciado. "Como foi criado" (D3, coluna "Onde" de
@@ -306,14 +306,14 @@ promoção e o compartilhamento e o finish anota a data. O dia da contagem não 
     D1–D43, checklist por tela, build nos dois modos) são critérios de task, não cenários de
     sistema, e estão em `tasks.md` grupos 2 a 4 e 6. O único comportamento de sistema que o
     change reexecuta — build sem token e sem rede, com e sem a flag — já está especificado em
-    `.work/changes/setup-catalogo/specs/projeto-base/spec.md` ("Build sem segredos e sem rede"),
+    `.work/changes/archive/2026-10-07-setup-catalogo/specs/projeto-base/spec.md` ("Build sem segredos e sem rede"),
     e repeti-lo aqui seria duplicar. `specs/` fica vazia (com `.gitkeep` para a pasta existir no
     git; o render ignora arquivos que não são `.md`). Alternativa descartada: uma capability
     `documentacao-entrega` com cenários "QUANDO seguir o README num clone limpo ENTÃO
     `npm run dev` sobe" — forçaria o formato "O sistema DEVE" sobre um artefato que não é o
     sistema, e os mesmos cenários já estão como Critério nas tasks 4.1 e 2.10.
 12. **"Processo", "Como foi criado" e "Entrega"** (D8, D41, D42, D3; `providers.git_host: github` e `config.yaml > git`)
-    — "Processo" mantém a tabela de `.work/` e `.claude/` do esqueleto e ganha: o fluxo (devflow-core
+    — "Processo" mantém a tabela de `.work/` e do ferramental local (não versionado) do esqueleto e ganha: o fluxo (devflow-core
     no Claude Code: propose → apply → evidence → commit → pr → finish por change), os seis changes
     na ordem de D41 com uma linha cada e o link para `.work/changes/<nome>/` (ou
     `.work/changes/archive/` se o finish arquivar; o link segue o que existir) e o `change.html`
@@ -337,7 +337,7 @@ promoção e o compartilhamento e o finish anota a data. O dia da contagem não 
     nota). No finish: `backlog.md` L8 → `done` (e qualquer L1–L7 ainda `doing`, com nota);
     `decisoes.md › Perguntas em aberto` recebe a data do compartilhamento na linha da plataforma
     (já resolvida); `change.html`
-    regenerado (`node .claude/devflow/tools/htmlgen.mjs readme-entrega`). Evidências em `docs/`
+    regenerado (com o ferramental local, não versionado). Evidências em `docs/`
     conforme `layout` do config: saída do clone limpo, tabela do checklist com valores, resumo dos
     dois builds, registro do compartilhamento.
 
@@ -384,7 +384,7 @@ Registrados em 2026-10-07, no apply. Nenhuma decisão D<n> foi reaberta.
 - **O README segue a regra de `.work/config.yaml > context › README`, e não a estrutura das
   decisões 1, 2, 3 e 12 deste design.** A regra (commit `039e1b3`, D8 revisada em 2026-10-07) diz
   que o README trata só do código: sem seção "Processo", sem menção a devflow, changes, backlog,
-  `.work/` ou `.claude/`, sem ids `D<n>`/`L<n>`. Os cinco finishes anteriores já a seguiram: o
+  `.work/` ou o ferramental local, sem ids `D<n>`/`L<n>`. Os cinco finishes anteriores já a seguiram: o
   README de partida não tinha nenhum id. Consequências:
   - os parágrafos de decisão têm título em negrito, sem `**D<n>.**`; os critérios das tasks 1.1,
     2.6 e 2.10 que contam ids com `grep` não se aplicam. A cobertura das decisões é conferida pelo
