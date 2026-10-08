@@ -21,6 +21,7 @@ describe("pickOverview", () => {
     expect(pickOverview(movie603, "pt-BR")).toEqual({
       text: movie603.overview,
       language: "pt",
+      fallback: false,
     });
   });
 
@@ -33,6 +34,7 @@ describe("pickOverview", () => {
     expect(pickOverview({ ...movie603, overview: "" }, "pt-BR")).toEqual({
       text: enUS.data.overview,
       language: "en",
+      fallback: true,
     });
   });
 
@@ -48,13 +50,13 @@ describe("pickOverview", () => {
         { ...movie603, overview: "", translations: { translations: [enGB, ja, enUS] } },
         "pt-BR",
       ),
-    ).toEqual({ text: enUS.data.overview, language: "en" });
+    ).toEqual({ text: enUS.data.overview, language: "en", fallback: true });
     expect(
       pickOverview(
         { ...movie603, overview: "", translations: { translations: [ja, enGB] } },
         "pt-BR",
       ),
-    ).toEqual({ text: "A British overview.", language: "en" });
+    ).toEqual({ text: "A British overview.", language: "en", fallback: true });
   });
 
   it("sem inglês usa a tradução do idioma original", () => {
@@ -73,7 +75,7 @@ describe("pickOverview", () => {
         },
         "pt-BR",
       ),
-    ).toEqual({ text: ja.data.overview, language: "ja" });
+    ).toEqual({ text: ja.data.overview, language: "ja", fallback: true });
   });
 
   it("sem inglês e sem o idioma original usa a primeira tradução com texto", () => {
@@ -86,7 +88,7 @@ describe("pickOverview", () => {
         },
         "pt-BR",
       ),
-    ).toEqual({ text: ja.data.overview, language: "ja" });
+    ).toEqual({ text: ja.data.overview, language: "ja", fallback: true });
   });
 
   it("devolve null quando nenhuma tradução tem texto", () => {
@@ -112,6 +114,27 @@ describe("pickOverview", () => {
     expect(
       pickOverview({ overview: "  ", original_language: "en", translations: undefined }, "pt-BR"),
     ).toBeNull();
+  });
+
+  it("com es-ES pedido, a sinopse do filme não é fallback e a tradução en é", () => {
+    expect(pickOverview(movie603, "es-ES")).toEqual({
+      text: movie603.overview,
+      language: "es",
+      fallback: false,
+    });
+    expect(pickOverview({ ...movie603, overview: "" }, "es-ES")).toEqual({
+      text: enUS.data.overview,
+      language: "en",
+      fallback: true,
+    });
+  });
+
+  it("com en-US pedido, a tradução en não é fallback", () => {
+    expect(pickOverview({ ...movie603, overview: "" }, "en-US")).toEqual({
+      text: enUS.data.overview,
+      language: "en",
+      fallback: false,
+    });
   });
 
   it("apara o texto escolhido", () => {

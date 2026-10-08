@@ -52,6 +52,8 @@ export interface CastMember {
 export interface MovieOverview {
   text: string;
   language: string;
+  /** true quando o texto não veio no idioma pedido (TMDB_LANGUAGE): o Overview avisa. */
+  fallback: boolean;
 }
 
 /** Trailer do YouTube para o TrailerEmbed. */

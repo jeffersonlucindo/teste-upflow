@@ -2,7 +2,7 @@ import "server-only";
 
 import { TmdbError, errorKindFromStatus, type TmdbErrorKind } from "./errors";
 import { toGenres, toListingResult, toMovieDetail } from "./mappers";
-import { buildListingRequest, todayUtc } from "./params";
+import { buildListingRequest, todayUtc, videoLanguages } from "./params";
 import type {
   Genre,
   ListingQuery,
@@ -24,8 +24,6 @@ export const REVALIDATE_LISTING = 3_600;
 export const REVALIDATE_DETAIL = 3_600;
 
 export const DETAIL_APPEND = "credits,videos,translations";
-// O valor `pt` sozinho só casa com vídeos pt-PT; os brasileiros exigem `pt-BR` na lista.
-export const VIDEO_LANGUAGES = "pt-BR,pt,en,null";
 
 interface TmdbConfig {
   token: string;
@@ -133,7 +131,7 @@ export async function getMovieDetail(id: number): Promise<MovieDetail | null> {
     const dto = await tmdbFetch<TmdbMovieDetailDto>(
       config,
       `/movie/${id}`,
-      { append_to_response: DETAIL_APPEND, include_video_language: VIDEO_LANGUAGES },
+      { append_to_response: DETAIL_APPEND, include_video_language: videoLanguages(config.language) },
       REVALIDATE_DETAIL,
     );
 

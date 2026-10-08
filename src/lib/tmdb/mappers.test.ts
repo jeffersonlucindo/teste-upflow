@@ -133,7 +133,7 @@ describe("toMovieDetail", () => {
   it("preenche sinopse e trailer pelas seleções", () => {
     const detail = toMovieDetail(detailDto, "pt-BR");
 
-    expect(detail.overview).toEqual({ text: movie603.overview, language: "pt" });
+    expect(detail.overview).toEqual({ text: movie603.overview, language: "pt", fallback: false });
     expect(detail.trailer).toEqual({ key: "trailerEN2014", name: "Official Trailer" });
   });
 
